@@ -237,7 +237,7 @@ function AnomalyColumn({ letter, side }) {
   )
 }
 
-function Interpretation({ result }) {
+export function Interpretation({ result }) {
   const i = result.interpretation
   const list = (title, items) => (
     <section className="copilot-section">

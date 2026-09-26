@@ -3,6 +3,7 @@ import { getExperimentAnalysis, simulateScaleUp } from '../api.js'
 import AdvancedScaleUpModeling from './AdvancedScaleUpModeling.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import MetricCard from './MetricCard.jsx'
+import ScaleUpSeries from './ScaleUpSeries.jsx'
 import SourceBadge from './SourceBadge.jsx'
 
 const QUICK_SCALES = [1, 10, 100, 1000]
@@ -177,7 +178,7 @@ function DerivedCalculations({ result }) {
 }
 
 /** Transparent, illustrative scale-up scenario for a stored experiment (read-only). */
-export default function ScaleUpSimulator({ dataVersion, onScaleUpScenario }) {
+export default function ScaleUpSimulator({ active, dataVersion, onScaleUpScenario, onOpenComparison }) {
   const [experiment, setExperiment] = useState(null)
   const [source, setSource] = useState(null) // Phase 5 analysis of the source experiment
   const [targetScale, setTargetScale] = useState('')
@@ -447,6 +448,7 @@ export default function ScaleUpSimulator({ dataVersion, onScaleUpScenario }) {
         </div>
       )}
       {loaded && <AdvancedScaleUpModeling experimentId={experimentId} targetScale={targetScale} />}
+      <ScaleUpSeries active={active} dataVersion={dataVersion} onOpenComparison={onOpenComparison} />
     </section>
   )
 }

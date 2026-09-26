@@ -53,6 +53,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 17:** Real-Time Bioprocess Monitoring & Alerts — live alerts from the existing anomaly rules on simulator data (Simulated Bioreactor page and Command Center), a labelled SIMULATED DISTURBANCE for demos, and an optional AI Copilot explanation of an alert.
 - **Phase 18:** Alert Investigation — Finding Precedents: exact same-rule matches of an alert/finding in stored experiments, what the stored data showed afterwards, a "Compare with this run" hand-off and optional precedents in the Copilot explanation.
 - **Phase 19A:** Demo readiness — deterministic SIMULATED demo seed (`python -m app.demo_seed`), Command Center as the landing page with a navigation-only demo workflow, and live-alert highlighting on the bioreactor and metric cards.
+- **Phase 20:** Stored Scale-Up Series — two stored runs at different scales side by side on the Scale-Up page (scale relationship, observed differences, each run's engineering context, shared-time comparison, caveats), with an optional Gemini explanation.
 
 ## API
 
@@ -324,6 +325,17 @@ Open **Experiment Planning**, select a reference experiment, an objective and (o
 - **DERIVED CALCULATION:** change from reference and relative position within the allowed range. **Warnings:** significant anomaly findings in the reference run (a baseline repeat may be appropriate first) and *extrapolation beyond observed conditions* for values outside the reference run's observed range.
 - **Explain with AI** (`POST /api/experiments/{id}/plan/interpret`) is called only on click. The backend regenerates the plan and sends only the plan (no observation history) to Gemini, whose output is labelled AI INTERPRETATION. Gemini does not generate or change candidates.
 - **Limitations:** no outcome prediction or ML; one-at-a-time designs miss interactions; the comparison design is very small; the reference is a single run; default ranges are generic.
+
+## Stored Scale-Up Series (Phase 20)
+
+> **Cross-scale analysis compares stored observations and deterministic engineering calculations. It does not prove biological scale-up success, rank the runs or predict biological outcomes.**
+
+At the bottom of the **Scale-Up** page, select a **source** and a **target** stored run (each with its own picker; nothing is shared with other pages). No new endpoint: the section reuses
+- `POST /api/experiments/compare` (source = A, target = B) for the scale relationship (factor, volume change, larger/smaller/equal), observed parameter differences (average/final/min/max; difference and % relative to the source), observed durations, shared-time comparison (only where both runs have an observation — no interpolation; "Insufficient shared time points…" otherwise) and data-quality notices;
+- `POST /api/scale-up/model` once per run at its own scale, for each run's engineering context (agitation, aeration, P/V, tip speed, kLa, OTR, OUR, oxygen balance) with the default model constants. No impeller geometry is assumed, so geometry-dependent values are *Not available* unless entered as a scenario in Advanced Scale-Up Modeling;
+- `POST /api/experiments/compare/interpret` only when **Explain with AI** is clicked (compact comparison, no raw observations).
+
+**Open Full Comparison** opens Experiment Comparison with the pair preselected. Labels: OBSERVED DATA, DERIVED CALCULATION, SCENARIO ASSUMPTION, AI INTERPRETATION, NOT AVAILABLE. With the demo seed, `DEMO-1L-BASELINE` → `DEMO-10L-SCALEUP` shows 1 L → 10 L (10×); the simulator does not model physical scale effects, so the differences come from the configured setpoints and seeds.
 
 ## Demo readiness (Phase 19A)
 

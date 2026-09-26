@@ -548,3 +548,17 @@ button.danger { background: var(--bad); color: #fff; }
 .bx-alert .bx-thermo-bulb, .bx-alert .bx-thermo-fill { fill: var(--bad); }
 .metric.metric-alert { border-color: var(--bad); box-shadow: 0 0 0 2px var(--bad-bg); }
 .metric.metric-alert .metric-caption { color: var(--bad); }
+
+/* Phase 20: Stored Scale-Up Series */
+.series { border-top: 1px solid var(--border); margin-top: 28px; }
+.series h4 { margin: 18px 0 6px; }
+.series-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: center; margin: 12px 0; }
+.series-side { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.series-relation { text-align: center; }
+.series-diagram { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; font-weight: 700; }
+.series-vol { font-size: 1.15rem; }
+.series-arrow { color: var(--muted); font-size: 1.1rem; }
+.series-factor { color: var(--accent); font-size: 0.9rem; }
+.series-duration { max-width: 460px; }
+.series-caveats { font-size: 0.88rem; padding-left: 18px; }
+.series-ai { margin-top: 12px; }
