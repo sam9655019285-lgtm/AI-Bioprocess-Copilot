@@ -1,0 +1,9 @@
+experiment_id,culture_time_hours,temperature_c,ph,dissolved_oxygen_percent,agitation_rpm,cell_density,feed_rate,nutrient_concentration,aeration_rate,notes
+EXP-001,0,37.0,7.10,95,120,0.30,,6.0,0.05,Inoculation
+EXP-001,24,37.0,7.05,82,120,0.85,,5.4,0.05,
+EXP-001,48,36.9,7.00,68,130,2.10,2.0,4.6,0.08,Feed started
+EXP-001,72,37.0,6.95,55,140,4.40,2.5,3.9,0.10,
+EXP-001,96,37.1,6.90,45,150,7.20,3.0,3.1,0.12,
+EXP-001,120,36.5,6.85,40,150,9.80,3.0,2.6,0.12,Temperature shift
+EXP-001,144,36.5,6.85,38,150,11.50,3.0,2.2,0.12,
+EXP-001,168,36.5,6.80,36,150,12.20,2.5,1.9,0.12,

@@ -1,0 +1,10 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9  # required by FastAPI for file uploads
+sqlmodel>=0.0.22         # SQLite persistence (SQLAlchemy + Pydantic)
+google-genai>=2.0        # Gemini API (official Google Gen AI SDK); key via GEMINI_API_KEY
+reportlab>=4.0           # PDF experiment reports (tables + native line charts)
+
+# Testing
+pytest>=8.0.0
+httpx>=0.27.0
