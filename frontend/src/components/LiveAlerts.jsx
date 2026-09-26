@@ -174,7 +174,7 @@ export default function LiveAlerts({ sim, compact = false, onNavigate, onOpenCom
       ) : (
         <ol className="live-alert-list">
           {alerts.map((a) => (
-            <li key={uid(a)} className={`live-alert ${a.acknowledged ? 'acknowledged' : ''}`} data-testid="live-alert">
+            <li key={uid(a)} className={`live-alert live-alert-${a.finding.severity} ${a.acknowledged ? 'acknowledged' : ''}`} data-testid="live-alert">
               <div className="live-alert-row">
                 <SeverityBadge severity={a.finding.severity} />
                 <span className="live-alert-time">{hours(a.detected_at_hours)}</span>

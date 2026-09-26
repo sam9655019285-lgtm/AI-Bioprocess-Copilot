@@ -815,3 +815,73 @@ td.num { font-variant-numeric: tabular-nums; }
   .cc-metrics .metric-value { font-size: 1.4rem; }
   .cc-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* =====================================================================================
+   UI/UX Phase 4 — Bioreactor & Process Monitoring polish (presentation only)
+   ===================================================================================== */
+
+/* Bioreactor page: status header, framed vessel, running emphasis */
+.bioreactor-page .sim-header, .sim .sim-header { padding-bottom: var(--space-3); border-bottom: 1px solid var(--border); margin-bottom: var(--space-3); }
+.bx-layout { gap: var(--space-5); margin-top: var(--space-4); }
+.bx-figure { background: radial-gradient(ellipse at 50% 38%, var(--accent-soft), transparent 70%), var(--surface-2); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-4); transition: box-shadow 0.25s, border-color 0.25s; }
+.bx-figure:has(.bioreactor-svg.running) { border-color: color-mix(in srgb, var(--ok) 55%, var(--border)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 14%, transparent); }
+.bx-figure figcaption { margin-top: var(--space-2); }
+
+/* Live bioprocess data: instrument-style rows */
+.bx-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); }
+.bx-metric { padding: 8px 4px; }
+.bx-metric dd { font-size: 1.02rem; color: var(--text); }
+.bx-metric:hover { background: var(--surface-2); }
+.bx-gauges { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-3); }
+.bx-bar { height: 10px; border-radius: 5px; }
+
+/* Controls grouped: PROCESS · SPEED/SIMULATION */
+.bx-controls { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); align-items: flex-end; }
+.bx-ctrl-group { display: flex; flex-direction: column; gap: 6px; }
+.bx-speed.bx-ctrl-group { align-items: flex-start; }
+.bx-legend { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-3) var(--space-3) var(--space-3) 34px; }
+
+/* Simulated Bioreactor page: control panel, disturbance box, live data */
+.sim-controls { background: var(--surface-2); border-color: var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-4); }
+.sim-controls .actions { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.disturbance { background: color-mix(in srgb, var(--warn) 6%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border)); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+.status-pill { background: var(--surface); }
+.status-running { background: color-mix(in srgb, var(--ok) 10%, var(--surface)); }
+
+/* Simulated alert highlight (Phase 19A): neutral attention tone for any active alert, gentle pulse */
+.bx-alert .bx-probe, .bx-alert .bx-metal, .bx-alert .bx-thermo-tube { stroke: var(--warn); }
+.bx-alert .bx-label { fill: var(--warn); }
+.bx-alert .bx-thermo-bulb, .bx-alert .bx-thermo-fill { fill: var(--warn); }
+.bx-alert { animation: ui-alert-pulse 1.8s ease-in-out infinite; }
+@keyframes ui-alert-pulse { 50% { opacity: 0.55; } }
+.metric.metric-alert { border-color: var(--warn); box-shadow: 0 0 0 2px color-mix(in srgb, var(--warn) 22%, transparent); }
+.metric.metric-alert .metric-caption { color: var(--warn); font-weight: 600; }
+
+/* Live alerts: severity-ranked rows; acknowledged rows quieter */
+.live-alert { border-left: 3px solid var(--border); padding: 8px 10px; margin: 6px 0; border-bottom: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--surface-2); }
+.live-alert-info { border-left-color: var(--info); }
+.live-alert-attention { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 6%, var(--surface)); }
+.live-alert-significant { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 7%, var(--surface)); }
+.live-alert.acknowledged { background: transparent; opacity: 0.6; }
+.alert-detail { border-top: 1px dashed var(--border); padding-top: var(--space-2); }
+
+/* Process Monitoring: experiment band, section rhythm, chart cards, empty states */
+.monitoring .exp-header { background: var(--surface-2); border-color: var(--border-strong); border-left: 4px solid var(--accent); border-radius: var(--radius); }
+.monitoring > h3, .monitoring h3.section { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.monitoring .exp-header h3 { border-top: 0; padding-top: 0; margin-top: 0; }
+.monitoring .summary-list { background: var(--surface-2); border-radius: var(--radius); padding: var(--space-3) var(--space-4) var(--space-3) 34px; }
+.charts { gap: var(--space-4); }
+.trend { background: var(--surface); border-radius: var(--radius); padding: var(--space-3) var(--space-2) var(--space-1); box-shadow: var(--shadow-sm); }
+.trend figcaption { padding: 0 var(--space-2) var(--space-2); margin-bottom: var(--space-1); border-bottom: 1px solid var(--border); }
+.placeholder { border-style: dashed; padding: var(--space-6) var(--space-4); }
+.metrics { gap: var(--space-3); }
+
+@media (max-width: 760px) {
+  .bx-layout { gap: var(--space-4); }
+  .bx-controls { align-items: flex-start; }
+  .bx-legend { columns: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bx-alert { animation: none; }
+  .bx-figure { transition: none; }
+}

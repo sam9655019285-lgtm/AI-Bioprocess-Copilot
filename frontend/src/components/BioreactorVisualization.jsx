@@ -149,18 +149,21 @@ export default function BioreactorVisualization({ sim, active, scaleUpScenarios 
       </div>
 
       <div className="bx-controls">
-        <div className="actions">
-          <button onClick={handleStart} disabled={!connected || running}>
-            ▶ {run ? 'Resume' : 'Start'}
-          </button>
-          <button className="secondary" onClick={sim.stop} disabled={!connected || !running}>
-            ⏸ Pause
-          </button>
-          <button className="secondary" onClick={sim.reset} disabled={!connected || !run}>
-            ↻ Reset
-          </button>
+        <div className="bx-ctrl-group">
+          <span className="muted small-label">Process</span>
+          <div className="actions">
+            <button onClick={handleStart} disabled={!connected || running}>
+              ▶ {run ? 'Resume' : 'Start'}
+            </button>
+            <button className="secondary" onClick={sim.stop} disabled={!connected || !running}>
+              ⏸ Pause
+            </button>
+            <button className="secondary" onClick={sim.reset} disabled={!connected || !run}>
+              ↻ Reset
+            </button>
+          </div>
         </div>
-        <div className="bx-speed">
+        <div className="bx-speed bx-ctrl-group">
           <span className="muted small-label">Speed</span>
           <div className="chip-group" aria-label="Simulation speed">
             {SPEEDS.map((s) => (
