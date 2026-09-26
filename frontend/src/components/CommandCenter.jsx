@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getExperimentAnalysis, getExperimentAnomalies, simulateScaleUp } from '../api.js'
+import { alertedParameters } from '../useSimulator.js'
 import BioreactorVessel from './BioreactorVessel.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import LiveAlerts from './LiveAlerts.jsx'
@@ -38,6 +39,46 @@ function Panel({ title, action, children, className = '' }) {
       </div>
       {children}
     </section>
+  )
+}
+
+// SIMULATED DEMO WORKFLOW (Phase 19A): navigation only; every action stays on its own page.
+const DEMO_STEPS = [
+  { page: 'simulator', label: 'Simulated Bioreactor', hint: 'Save to DEMO-LIVE and press START.' },
+  { page: 'simulator', label: 'Inject simulated disturbance', hint: 'Choose DO −35 % air sat. and press Inject disturbance.' },
+  { page: 'simulator', label: 'Inspect alert', hint: 'Open the alert and its evidence in Live alerts.' },
+  { page: 'simulator', label: 'Find precedents', hint: 'In the alert detail: the same rule in stored runs.' },
+  { page: 'comparison', label: 'Compare runs', hint: 'Or use "Compare with this run" from a precedent.' },
+  { page: 'scaleup', label: 'Scale-Up', hint: 'Engineering estimates with labelled assumptions.' },
+  { page: 'forecasting', label: 'Forecasting', hint: 'Illustrative model forecast.' },
+  { page: 'planning', label: 'Experiment Planning', hint: 'Candidate conditions within allowed ranges.' },
+  { page: 'copilot', label: 'AI Copilot', hint: 'Gemini runs only when you ask.' },
+  { page: 'report', label: 'Report', hint: 'Download the PDF.' },
+]
+
+function DemoWorkflow({ sim, onNavigate }) {
+  const simState = sim.status === 'simulating' ? 'running' : sim.run ? 'paused' : 'no run'
+  return (
+    <details className="cc-demo" data-testid="demo-workflow">
+      <summary>
+        <span className="cat-badge cat-assumption">SIMULATED DEMO WORKFLOW</span> Suggested demonstration path
+        <span className="muted small-note"> · simulator: {simState} · {sim.unacknowledged} unacknowledged live alert(s)</span>
+      </summary>
+      <p className="muted small-note">
+        Buttons only open the relevant page; starting the simulator, injecting a disturbance and asking Gemini stay explicit
+        actions on those pages. Demo data is simulated (seed it with <code>python -m app.demo_seed</code>), not laboratory data.
+      </p>
+      <ol className="cc-demo-steps">
+        {DEMO_STEPS.map((s) => (
+          <li key={s.label}>
+            <button type="button" className="link-button" onClick={() => onNavigate?.(s.page)}>
+              {s.label}
+            </button>
+            <span className="muted small-note"> — {s.hint}</span>
+          </li>
+        ))}
+      </ol>
+    </details>
   )
 }
 
@@ -113,6 +154,7 @@ export default function CommandCenter({
         One view of an experiment, assembled from the application's existing analysis, anomaly checks, scale-up
         scenario, simulator and AI results. It adds no new calculations or scores.
       </p>
+      <DemoWorkflow sim={sim} onNavigate={onNavigate} />
       <ExperimentPicker
         sources={['manual', 'csv', 'simulated']}
         value={experiment}
@@ -178,7 +220,12 @@ export default function CommandCenter({
             <Panel title="Live bioreactor" action={<LinkButton onClick={() => go('bioreactor')}>Open Full Bioreactor View</LinkButton>}>
               {active && (
                 <div className="cc-vessel">
-                  <BioreactorVessel values={latest} running={liveRun && sim.status === 'simulating'} volumeLiters={a.experiment.scale_liters} />
+                  <BioreactorVessel
+                    values={latest}
+                    running={liveRun && sim.status === 'simulating'}
+                    volumeLiters={a.experiment.scale_liters}
+                    highlight={liveRun ? alertedParameters(sim.alerts, experimentId) : undefined}
+                  />
                 </div>
               )}
               <p className="muted small-note">

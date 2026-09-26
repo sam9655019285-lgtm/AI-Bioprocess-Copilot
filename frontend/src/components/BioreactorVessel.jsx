@@ -74,13 +74,19 @@ const Bubbles = memo(function Bubbles({ count, duration }) {
   )
 })
 
-function BioreactorVessel({ values, running, volumeLiters }) {
+const ALERT_TITLE = 'Simulated alert on this parameter (see Live alerts)'
+const NO_HIGHLIGHT = new Set()
+
+/** `highlight` (optional): parameters with an active live alert (Phase 19A); illustrative only. */
+function BioreactorVessel({ values, running, volumeLiters, highlight = NO_HIGHLIGHT }) {
   const { temperature_c: temp, agitation_rpm: rpm, aeration_rate: vvm, feed_rate: feed, cell_density: cells } = values ?? {}
   const period = impellerPeriod(rpm)
   const bubbles = bubbleCount(vvm)
   const feedEvery = feedPeriod(feed)
   const hasData = Boolean(values)
   const thermoHeight = 150 * thermoFraction(temp)
+  const alerted = (name) => highlight.has(name)
+  const alertProps = (name) => ({ 'data-alert': alerted(name) ? 'true' : 'false', className: alerted(name) ? 'bx-alert' : undefined })
 
   return (
     <svg
@@ -90,8 +96,11 @@ function BioreactorVessel({ values, running, volumeLiters }) {
       aria-label={`Illustrative stirred-tank bioreactor. ${running ? 'Simulation running.' : 'Simulation not running.'}`}
     >
       {/* motor + shaft */}
-      <rect x={SHAFT_X - 16} y={14} width={32} height={22} rx={4} className="bx-metal" />
-      <text x={SHAFT_X + 22} y={29} className="bx-label">Motor</text>
+      <g data-testid="bx-motor" {...alertProps('agitation_rpm')}>
+        {alerted('agitation_rpm') && <title>{ALERT_TITLE}</title>}
+        <rect x={SHAFT_X - 16} y={14} width={32} height={22} rx={4} className="bx-metal" />
+        <text x={SHAFT_X + 22} y={29} className="bx-label">Motor</text>
+      </g>
       <line x1={SHAFT_X} y1={36} x2={SHAFT_X} y2={IMPELLER_Y} className="bx-shaft" />
 
       {/* temperature jacket + vessel */}
@@ -120,10 +129,16 @@ function BioreactorVessel({ values, running, volumeLiters }) {
       {hasData && <Cells count={cellCount(cells)} />}
 
       {/* probes */}
-      <line x1={112} y1={70} x2={112} y2={200} className="bx-probe" />
-      <text x={100} y={66} className="bx-label">pH</text>
-      <line x1={208} y1={70} x2={208} y2={200} className="bx-probe" />
-      <text x={200} y={66} className="bx-label">DO</text>
+      <g data-testid="bx-probe-ph" {...alertProps('ph')}>
+        {alerted('ph') && <title>{ALERT_TITLE}</title>}
+        <line x1={112} y1={70} x2={112} y2={200} className="bx-probe" />
+        <text x={100} y={66} className="bx-label">pH</text>
+      </g>
+      <g data-testid="bx-probe-do" {...alertProps('dissolved_oxygen_percent')}>
+        {alerted('dissolved_oxygen_percent') && <title>{ALERT_TITLE}</title>}
+        <line x1={208} y1={70} x2={208} y2={200} className="bx-probe" />
+        <text x={200} y={66} className="bx-label">DO</text>
+      </g>
 
       {/* impeller (side view: blades narrow and widen as they turn) */}
       <g
@@ -167,7 +182,8 @@ function BioreactorVessel({ values, running, volumeLiters }) {
       </g>
 
       {/* thermometer */}
-      <g aria-hidden="true">
+      <g data-testid="bx-thermometer" {...alertProps('temperature_c')}>
+        {alerted('temperature_c') && <title>{ALERT_TITLE}</title>}
         <rect x={296} y={150} width={10} height={156} rx={5} className="bx-thermo-tube" />
         <rect x={298} y={304 - thermoHeight} width={6} height={thermoHeight} rx={3} className="bx-thermo-fill" data-testid="bx-thermo" />
         <circle cx={301} cy={314} r={10} className="bx-thermo-bulb" />

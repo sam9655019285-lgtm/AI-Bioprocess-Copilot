@@ -535,3 +535,16 @@ button.danger { background: var(--bad); color: #fff; }
 .prec-message { font-size: 0.85rem; }
 .prec-relation { font-size: 0.72rem; color: var(--muted); }
 .prec-same { color: var(--series-b); font-weight: 600; }
+
+/* Phase 19A: demo workflow + simulated alert highlighting */
+.cc-demo { border: 1px dashed var(--border); border-radius: 8px; padding: 8px 12px; margin: 8px 0 12px; }
+.cc-demo summary { cursor: pointer; }
+.cc-demo summary .cat-badge { margin-top: 0; margin-right: 6px; }
+.cc-demo-steps { margin: 6px 0 2px; padding-left: 22px; }
+.cc-demo-steps li { margin: 3px 0; }
+.cc-demo-steps .link-button { background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; }
+.bx-alert .bx-probe, .bx-alert .bx-metal, .bx-alert .bx-thermo-tube { stroke: var(--bad); stroke-width: 4; }
+.bx-alert .bx-label { fill: var(--bad); font-weight: 700; }
+.bx-alert .bx-thermo-bulb, .bx-alert .bx-thermo-fill { fill: var(--bad); }
+.metric.metric-alert { border-color: var(--bad); box-shadow: 0 0 0 2px var(--bad-bg); }
+.metric.metric-alert .metric-caption { color: var(--bad); }

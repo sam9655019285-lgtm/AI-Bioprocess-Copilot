@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getObservationSchema } from '../api.js'
-import { MAX_HISTORY } from '../useSimulator.js'
+import { alertedParameters, MAX_HISTORY } from '../useSimulator.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import LiveAlerts from './LiveAlerts.jsx'
 import MetricCard from './MetricCard.jsx'
@@ -83,6 +83,7 @@ export default function SimulatedBioreactor({ sim, active, dataVersion, onDataCh
   const simulating = sim.status === 'simulating'
   const connected = sim.connection === 'open'
   const latest = sim.history.at(-1)
+  const alerted = alertedParameters(sim.alerts, sim.run?.experiment_id)
   const recent = sim.history.slice(-RECENT_ROWS).reverse()
 
   function handleStart() {
@@ -217,7 +218,15 @@ export default function SimulatedBioreactor({ sim, active, dataVersion, onDataCh
 
       <div className="metrics">
         {METRICS.map((m) => (
-          <MetricCard key={m.key} label={m.label} value={latest?.[m.key]} unit={m.unit} digits={m.digits} />
+          <MetricCard
+            key={m.key}
+            label={m.label}
+            value={latest?.[m.key]}
+            unit={m.unit}
+            digits={m.digits}
+            className={alerted.has(m.key) ? 'metric-alert' : ''}
+            caption={alerted.has(m.key) ? 'Simulated alert (see Live alerts)' : undefined}
+          />
         ))}
       </div>
 

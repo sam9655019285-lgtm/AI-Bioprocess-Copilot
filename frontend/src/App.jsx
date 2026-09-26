@@ -35,7 +35,7 @@ const PAGES = [
 ]
 
 export default function App() {
-  const [pageId, setPageId] = useState('experiment-data')
+  const [pageId, setPageId] = useState('command-center')
   // The single simulator WebSocket, shared by the Simulated Bioreactor page and the Bioreactor view.
   const sim = useSimulator()
   // Bumped whenever stored experiments change, so every page can reload its lists.

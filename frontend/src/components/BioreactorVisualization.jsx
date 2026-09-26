@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { alertedParameters } from '../useSimulator.js'
 import BioreactorVessel from './BioreactorVessel.jsx'
 
 const NA = 'Not available'
@@ -86,7 +87,9 @@ export default function BioreactorVisualization({ sim, active, scaleUpScenarios 
 
       <div className="bx-layout">
         <figure className="bx-figure">
-          {active && <BioreactorVessel values={latest} running={running} volumeLiters={shownVolume} />}
+          {active && (
+            <BioreactorVessel values={latest} running={running} volumeLiters={shownVolume} highlight={alertedParameters(sim.alerts, run?.experiment_id)} />
+          )}
           <figcaption className="muted small-note">
             Cell visualization — illustrative. Particles, bubbles, mixing arrows and drops are symbolic and scaled from
             the simulator values; they are not a cell count, oxygen-transfer or flow model.

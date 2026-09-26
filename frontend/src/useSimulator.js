@@ -6,6 +6,21 @@ export const MAX_HISTORY = 300
 export const MAX_ALERTS = 200
 const SEVERITY_RANK = { info: 0, attention: 1, significant: 2 }
 
+/**
+ * Parameters with an active live alert for one run (Phase 19A visual highlighting): unacknowledged, non-stale
+ * alerts of `experimentId`, including co-occurrence parameters. Pure; derived from existing alert state.
+ */
+export function alertedParameters(alerts, experimentId) {
+  const out = new Set()
+  if (!experimentId) return out
+  for (const a of alerts) {
+    if (a.experiment_id !== experimentId || a.acknowledged || a.stale) continue
+    if (a.finding.parameter) out.add(a.finding.parameter)
+    for (const p of a.finding.related_parameters ?? []) out.add(p)
+  }
+  return out
+}
+
 /** Merge one alert event: "new" appends, "updated" replaces in place; an escalation needs acknowledging again. */
 function mergeAlert(alerts, { alert }) {
   const i = alerts.findIndex((a) => a.alert_id === alert.alert_id && a.experiment_id === alert.experiment_id)
