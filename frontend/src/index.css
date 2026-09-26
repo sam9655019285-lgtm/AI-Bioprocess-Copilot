@@ -713,3 +713,39 @@ td.num { font-variant-numeric: tabular-nums; }
   .live-alert { animation: none; }
   .tab, button, tbody tr, input, select, textarea, .chip-question { transition: none; }
 }
+
+/* =====================================================================================
+   UI/UX Phase 2 — application layout & navigation (presentation only; same tabs, order and callbacks)
+   ===================================================================================== */
+
+/* Grouped navigation: Operate → Investigate → Model & Plan → AI & Output → Records */
+.tabs { align-items: flex-end; gap: 0; row-gap: var(--space-2); }
+.tab-group { display: flex; flex-direction: column; gap: 2px; margin-right: var(--space-5); }
+.tab-group-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); padding: 0 11px; }
+.tab-group-items { display: flex; flex-wrap: wrap; gap: 2px; }
+.tab-group:has(.tab-active) .tab-group-label { color: var(--accent); }
+
+/* Where am I / what is this page for */
+.page-context { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: calc(-1 * var(--space-2)) 0 var(--space-4); font-size: 0.88rem; color: var(--muted); }
+.page-context strong { color: var(--text); font-weight: 650; }
+.page-context-group { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.page-context-sep { color: var(--border-strong); }
+
+/* Experiment context: compact, prominent box around each page's own picker */
+.picker { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+.picker-select span { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.picker-summary { margin-top: 6px; }
+.compare-pickers { gap: var(--space-3) var(--space-5); }
+
+/* Readable line length for descriptive text; data sections keep the full width */
+.disclaimer, .card > p.muted:not(.placeholder), .card > .small-note { max-width: 96ch; }
+
+/* Section rhythm inside pages */
+.card h3 { margin-top: var(--space-5); }
+.cc-grid { gap: var(--space-4); }
+
+@media (max-width: 760px) {
+  .tab-group { margin-right: var(--space-3); }
+  .tab-group-label { padding: 0 9px; }
+  .page-context { margin-top: 0; }
+}

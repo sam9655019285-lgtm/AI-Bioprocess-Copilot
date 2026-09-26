@@ -16,26 +16,35 @@ import ScaleUpSimulator from './components/ScaleUpSimulator.jsx'
 import SimulatedBioreactor from './components/SimulatedBioreactor.jsx'
 import { useSimulator } from './useSimulator.js'
 
+// `group` and `purpose` are presentation only (UI/UX Phase 2): navigation groups follow the existing tab order.
 const PAGES = [
-  { id: 'command-center', label: 'Command Center', Component: CommandCenter },
-  { id: 'experiment-data', label: 'Experiment Data', Component: ExperimentData },
-  { id: 'simulator', label: 'Simulated Bioreactor', Component: SimulatedBioreactor },
-  { id: 'bioreactor', label: 'Bioreactor', Component: BioreactorVisualization },
-  { id: 'monitoring', label: 'Process Monitoring', Component: ProcessMonitoring },
-  { id: 'anomalies', label: 'Anomalies', Component: AnomalyDetection },
-  { id: 'forecasting', label: 'Forecasting', Component: ProcessForecasting },
-  { id: 'planning', label: 'Experiment Planning', Component: ExperimentPlanning },
-  { id: 'scaleup', label: 'Scale-Up', Component: ScaleUpSimulator },
-  { id: 'ai', label: 'AI Analysis', Component: AIProcessAnalysis },
-  { id: 'copilot', label: 'AI Copilot', Component: AICopilot },
-  { id: 'comparison', label: 'Experiment Comparison', Component: ExperimentComparison },
-  { id: 'report', label: 'Report', Component: ReportGeneration },
-  { id: 'history', label: 'Experiment History', Component: ExperimentHistory },
-  { id: 'status', label: 'Backend Status', Component: BackendStatus },
+  { id: 'command-center', label: 'Command Center', Component: CommandCenter, group: 'Operate', purpose: 'Operational overview of the selected experiment or live simulated run.' },
+  { id: 'experiment-data', label: 'Experiment Data', Component: ExperimentData, group: 'Operate', purpose: 'Create experiments and record observations manually or from CSV.' },
+  { id: 'simulator', label: 'Simulated Bioreactor', Component: SimulatedBioreactor, group: 'Operate', purpose: 'Run the software simulator, inject simulated disturbances and review live alerts.' },
+  { id: 'bioreactor', label: 'Bioreactor', Component: BioreactorVisualization, group: 'Operate', purpose: 'Illustrative view of the simulated bioreactor state.' },
+  { id: 'monitoring', label: 'Process Monitoring', Component: ProcessMonitoring, group: 'Operate', purpose: 'Track process variables across the culture timeline.' },
+  { id: 'anomalies', label: 'Anomalies', Component: AnomalyDetection, group: 'Investigate', purpose: 'Review rule-based process findings, their evidence and precedents in stored runs.' },
+  { id: 'forecasting', label: 'Forecasting', Component: ProcessForecasting, group: 'Model & Plan', purpose: 'Explore model-based estimates from historical observations.' },
+  { id: 'planning', label: 'Experiment Planning', Component: ExperimentPlanning, group: 'Model & Plan', purpose: 'Explore candidate conditions based on existing observations and allowed ranges.' },
+  { id: 'scaleup', label: 'Scale-Up', Component: ScaleUpSimulator, group: 'Model & Plan', purpose: 'Evaluate deterministic scale relationships, engineering assumptions and stored scale-up series.' },
+  { id: 'ai', label: 'AI Analysis', Component: AIProcessAnalysis, group: 'AI & Output', purpose: 'Gemini interpretation of the deterministic analysis, generated only on request.' },
+  { id: 'copilot', label: 'AI Copilot', Component: AICopilot, group: 'AI & Output', purpose: 'Ask questions about the selected experiment and its available evidence.' },
+  { id: 'comparison', label: 'Experiment Comparison', Component: ExperimentComparison, group: 'AI & Output', purpose: 'Compare two stored experiments side by side.' },
+  { id: 'report', label: 'Report', Component: ReportGeneration, group: 'AI & Output', purpose: 'Generate a PDF report from existing results.' },
+  { id: 'history', label: 'Experiment History', Component: ExperimentHistory, group: 'Records', purpose: 'Browse, open and delete stored experiments.' },
+  { id: 'status', label: 'Backend Status', Component: BackendStatus, group: 'Records', purpose: 'Backend connection and AI configuration status.' },
 ]
+// Consecutive pages with the same group, in tab order (the order of PAGES is unchanged).
+const GROUPS = PAGES.reduce((groups, page) => {
+  const last = groups.at(-1)
+  if (last?.name === page.group) last.pages.push(page)
+  else groups.push({ name: page.group, pages: [page] })
+  return groups
+}, [])
 
 export default function App() {
   const [pageId, setPageId] = useState('command-center')
+  const current = PAGES.find((p) => p.id === pageId)
   // The single simulator WebSocket, shared by the Simulated Bioreactor page and the Bioreactor view.
   const sim = useSimulator()
   // Bumped whenever stored experiments change, so every page can reload its lists.
@@ -74,18 +83,37 @@ export default function App() {
           bioreactor is connected.
         </p>
         <nav className="tabs" aria-label="Main">
-          {PAGES.map((p) => (
-            <button
-              key={p.id}
-              className={`tab ${p.id === pageId ? 'tab-active' : ''}`}
-              aria-current={p.id === pageId ? 'page' : undefined}
-              onClick={() => setPageId(p.id)}
-            >
-              {p.label}
-            </button>
+          {GROUPS.map((g) => (
+            <div key={g.name} className="tab-group" role="group" aria-label={g.name}>
+              <span className="tab-group-label" aria-hidden="true">
+                {g.name}
+              </span>
+              <div className="tab-group-items">
+                {g.pages.map((p) => (
+                  <button
+                    key={p.id}
+                    className={`tab ${p.id === pageId ? 'tab-active' : ''}`}
+                    aria-current={p.id === pageId ? 'page' : undefined}
+                    onClick={() => setPageId(p.id)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </header>
+      {current && (
+        <p className="page-context" aria-live="polite">
+          <span className="page-context-group">{current.group}</span>
+          <span className="page-context-sep" aria-hidden="true">
+            ›
+          </span>
+          <strong>{current.label}</strong>
+          <span className="page-context-purpose"> — {current.purpose}</span>
+        </p>
+      )}
 
       {/* All pages stay mounted so switching tabs keeps their state (e.g. a running simulation). */}
       {PAGES.map(({ id, Component }) => (

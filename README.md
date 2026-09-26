@@ -330,6 +330,8 @@ Open **Experiment Planning**, select a reference experiment, an objective and (o
 
 Visual styling lives in `frontend/src/index.css`: design tokens on `:root` (colours for light and dark mode via `prefers-color-scheme`, spacing, radius, shadow, focus ring) and one shared layer for navigation, cards, buttons, form controls, tables, metric cards, alerts and badges. The scientific trust labels have one consistent badge language — OBSERVED DATA (teal), DERIVED CALCULATION (neutral), MODEL/SCENARIO ASSUMPTION (amber), MODEL FORECAST / SCENARIO RESULT / CANDIDATE (orange), AI INTERPRETATION (violet), NOT AVAILABLE (grey, dashed) — and severities read INFO (blue) · ATTENTION (amber) · SIGNIFICANT (red). Styling only; no behaviour depends on it.
 
+UI/UX Phase 2 establishes the application-level navigation and layout hierarchy while preserving existing page architecture: the same 15 tabs, in the same order, are shown in labelled groups (Operate → Investigate → Model & Plan → AI & Output → Records), a one-line page context ("group › page — purpose") sits above every page, and each page's own experiment picker is shown as a compact context box. Pages keep their own experiment selection.
+
 ## Stored Scale-Up Series (Phase 20)
 
 > **Cross-scale analysis compares stored observations and deterministic engineering calculations. It does not prove biological scale-up success, rank the runs or predict biological outcomes.**
