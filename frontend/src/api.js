@@ -129,6 +129,11 @@ export function askCopilot(experimentId, body) {
   return request(`${experimentPath(experimentId)}/copilot`, json('POST', body))
 }
 
+// Illustrative process forecast (Phase 15): deterministic, read-only; no Gemini call
+export function forecastExperiment(experimentId, body = {}) {
+  return request(`${experimentPath(experimentId)}/forecast`, json('POST', body))
+}
+
 // Experiment comparison (Phase 10): deterministic, read-only; Gemini interpretation is optional
 export function compareExperiments(experimentAId, experimentBId) {
   return request('/api/experiments/compare', json('POST', { experiment_a_id: experimentAId, experiment_b_id: experimentBId }))

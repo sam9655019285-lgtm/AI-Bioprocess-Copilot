@@ -17,6 +17,7 @@ from .ai_analysis import build_ai_input
 from .analysis import analyze_experiment
 from .anomaly import analyze_anomalies
 from .db_models import ExperimentRow
+from .forecasting import ForecastRequest, forecast_experiment, forecast_summary
 from .gemini_service import AIAnalysis, Generator
 from .scaleup import ScaleUpRequest, simulate_scale_up
 
@@ -46,6 +47,8 @@ Rules:
 - Prototype monitoring ranges and thresholds are application rules, not universal biological limits.
 - Scale-up information, when present, is an illustrative scenario, not a validated prediction.
 - A previous AI process analysis, when present, is an earlier AI interpretation, not fact.
+- An illustrative process forecast, when present, is a simple model estimate from the application (not a validated
+  prediction); interpret it with its assumptions and limitations and do not recalculate it.
 - Use concise, scientist-friendly language.
 
 Output JSON matching the schema:
@@ -71,6 +74,9 @@ class CopilotRequest(BaseModel):
     scale_up: ScaleUpRequest | None = None
     ai_analysis: AIAnalysis | None = Field(
         default=None, description="Optional earlier Phase 8 AI analysis of this experiment (shown to Gemini as AI interpretation)."
+    )
+    forecast: ForecastRequest | None = Field(
+        default=None, description="Optional forecast settings; the forecast is recomputed here and summarised (Phase 15)."
     )
 
 
@@ -115,6 +121,8 @@ def build_copilot_context(session: Session, row: ExperimentRow, request: Copilot
             "note": "Earlier AI-generated interpretation (Phase 8). Not deterministic fact.",
             **request.ai_analysis.model_dump(),
         }
+    if request.forecast is not None:
+        context["illustrative_process_forecast"] = forecast_summary(forecast_experiment(session, row, request.forecast))
     info = CopilotContextInfo(
         observation_count=analysis.observation_count,
         finding_count=anomalies.finding_count,

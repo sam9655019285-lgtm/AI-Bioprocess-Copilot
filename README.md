@@ -48,6 +48,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 12:** Bioreactor Visualization — interactive, illustrative stirred-tank animation driven by the existing simulator state.
 - **Phase 13:** Bioprocess Command Center — one-screen dashboard aggregating the existing results for a selected experiment.
 - **Phase 14:** Advanced Scale-Up Modeling — illustrative engineering estimates (kLa, P/V, tip speed, OTR/OUR, agitation and aeration scaling strategies) inside the Scale-Up page.
+- **Phase 15:** Process Forecasting & What-If Scenarios — an Illustrative Process Forecast (exponential/logistic cell density, linear DO/pH/temperature trends) on the new **Forecasting** tab.
 
 ## API
 
@@ -86,6 +87,7 @@ Scale-up (Phase 6):
 |---|---|---|
 | POST | `/api/scale-up/simulate` | Illustrative scale-up scenario for a stored experiment. Read-only: writes nothing |
 | POST | `/api/scale-up/model` | Advanced scale-up modeling (Phase 14): engineering estimates with configurable assumptions. Read-only |
+| POST | `/api/experiments/{id}/forecast` | Illustrative process forecast (Phase 15): body `{horizon_hours?, cell_model: exponential\|logistic, carrying_capacity?, scenario?}`. 404 unknown experiment, 422 invalid input. Read-only |
 
 Errors: `404` unknown experiment, `409` duplicate ID or wrong data source, `422` invalid input, `503` database failure (friendly message, no stack trace).
 
@@ -275,6 +277,25 @@ Shown at the bottom of the **Scale-Up** page (`backend/app/scaleup_modeling.py`,
 **Model assumptions (configurable, labelled MODEL ASSUMPTION):** power number 5, liquid density 1000 kg/m³, K = 5 1/h, a = 0.4, b = 0.5, C* = 0.21 mmol/L, qO2 = 0.2 pmol/cell/h. **Impeller diameters are never assumed** — without them P/V, tip speed, kLa, OTR and geometry-based strategies are *Not available*; the "Use example geometry (D ∝ V^1/3)" button fills a labelled geometric-similarity example. Every value is labelled OBSERVED DATA, DERIVED CALCULATION, MODEL ASSUMPTION, SCENARIO RESULT or NOT AVAILABLE. The strategy comparison is not ranked.
 
 **Limitations:** the kLa correlation form and constants are illustrative (not vessel-specific), DO% is converted with a single C*, OUR at the target reuses the source cell density (no growth prediction), no gas hold-up, CO₂, shear, mixing time, heat transfer or CFD.
+
+## Process Forecasting & What-If Scenarios (Phase 15)
+
+> **Phase 15 provides illustrative process forecasting based on historical observations. It is not a validated biological or industrial prediction model.** Forecasts are model-based estimates using historical observations and configurable assumptions. They are not validated biological predictions.
+
+Open **Forecasting**, select an experiment: the backend (`backend/app/forecasting.py`, `POST /api/experiments/{id}/forecast`) fits simple models to the stored observations — a *Model forecast based on available observations and configurable assumptions*. Nothing is stored and Gemini is never called by this page.
+
+| Parameter | Model | Fit |
+|---|---|---|
+| Cell density | Exponential `X(t) = X0 · exp(mu · t)` | least squares on ln X (positive values only) |
+| Cell density | Logistic `X(t) = K / (1 + ((K − X0)/X0) · exp(−mu · t))` | least squares on ln(X/(K − X)); **K is a MODEL ASSUMPTION** (default 2 × observed max; must exceed the observed max) |
+| DO, pH, temperature | Linear trend `y = a + b·t` | ordinary least squares |
+
+- **Data sufficiency:** ≥ 3 usable (finite, non-missing) points at ≥ 2 distinct culture times per parameter; otherwise *Insufficient historical data for forecast.* Missing values are skipped, never treated as 0.
+- **Horizon:** default 25 % of the observed culture-time span, capped at 100 % of the span (the cap is reported).
+- **What-if scenario:** inputs (horizon, target scale, temperature, pH, DO, agitation, aeration, feed) are labelled SCENARIO INPUT. Only the horizon changes the forecast (results then labelled SCENARIO RESULT); the other inputs are recorded only, because no validated biological effect is modelled.
+- **Labels:** OBSERVED DATA, MODEL ASSUMPTION, MODEL FORECAST, SCENARIO INPUT, SCENARIO RESULT, NOT AVAILABLE.
+- **AI Copilot:** optional checkbox "Include the illustrative process forecast". The browser sends only the forecast *settings*; the backend recomputes the forecast and passes a compact summary (model, parameters, end values, assumptions — no raw point lists) to Gemini, which interprets but never calculates it.
+- **Limitations:** extrapolation of simple empirical curves; no mechanistic, substrate, feed, temperature or scale effects; no confidence intervals; not validated for any cell line or bioreactor.
 
 ## Anomalies (deterministic process checks)
 

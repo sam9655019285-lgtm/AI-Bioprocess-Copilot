@@ -475,3 +475,15 @@ button.danger { background: var(--bad); color: #fff; }
 .cat-scenario { color: var(--series-b); }
 .cat-na { color: var(--muted); }
 .adv-table td.wrap { white-space: normal; min-width: 180px; }
+
+/* Phase 15: Illustrative Process Forecast */
+.cat-forecast { color: var(--series-b); }
+.fc-controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; margin: 12px 0; }
+.fc-controls label { display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; min-width: 150px; }
+.fc-params { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.forecast-param { margin: 0; }
+.fc-assumptions { font-size: 0.85rem; margin-top: 8px; }
+.fc-assumptions summary { cursor: pointer; }
+.fc-whatif { border-top: 1px solid var(--border); margin-top: 24px; }
+.fc-actions { display: flex; gap: 8px; }
+.fc-scenario-table td.wrap { white-space: normal; min-width: 200px; }

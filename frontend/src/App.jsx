@@ -8,6 +8,7 @@ import CommandCenter from './components/CommandCenter.jsx'
 import ExperimentComparison from './components/ExperimentComparison.jsx'
 import ExperimentData from './components/ExperimentData.jsx'
 import ExperimentHistory from './components/ExperimentHistory.jsx'
+import ProcessForecasting from './components/ProcessForecasting.jsx'
 import ProcessMonitoring from './components/ProcessMonitoring.jsx'
 import ReportGeneration from './components/ReportGeneration.jsx'
 import ScaleUpSimulator from './components/ScaleUpSimulator.jsx'
@@ -21,6 +22,7 @@ const PAGES = [
   { id: 'bioreactor', label: 'Bioreactor', Component: BioreactorVisualization },
   { id: 'monitoring', label: 'Process Monitoring', Component: ProcessMonitoring },
   { id: 'anomalies', label: 'Anomalies', Component: AnomalyDetection },
+  { id: 'forecasting', label: 'Forecasting', Component: ProcessForecasting },
   { id: 'scaleup', label: 'Scale-Up', Component: ScaleUpSimulator },
   { id: 'ai', label: 'AI Analysis', Component: AIProcessAnalysis },
   { id: 'copilot', label: 'AI Copilot', Component: AICopilot },
@@ -47,6 +49,9 @@ export default function App() {
   const onScaleUpScenario = useCallback((experimentId, request) => setScaleUpScenarios((m) => ({ ...m, [experimentId]: request })), [])
   const [copilotReplies, setCopilotReplies] = useState({})
   const onCopilotReply = useCallback((experimentId, reply) => setCopilotReplies((m) => ({ ...m, [experimentId]: reply })), [])
+  // Latest forecast settings per experiment (in memory only), so the Copilot can optionally include the forecast.
+  const [forecastSettings, setForecastSettings] = useState({})
+  const onForecastSettings = useCallback((experimentId, body) => setForecastSettings((m) => ({ ...m, [experimentId]: body })), [])
   const openAnalysis = useCallback((experimentId) => {
     setAnalysisRequest({ experimentId })
     setPageId('monitoring')
@@ -91,6 +96,8 @@ export default function App() {
             onScaleUpScenario={onScaleUpScenario}
             copilotReplies={copilotReplies}
             onCopilotReply={onCopilotReply}
+            forecastSettings={forecastSettings}
+            onForecastSettings={onForecastSettings}
           />
         </div>
       ))}

@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from .ai_api import router as ai_router
 from .db import init_db
 from .experiments import router as experiments_router
+from .forecasting_api import router as forecasting_router
 from .report_api import router as report_router
 from .scaleup_api import router as scaleup_router
 from .simulator_api import router as simulator_router
@@ -33,6 +34,7 @@ app.include_router(simulator_router)
 app.include_router(scaleup_router)
 app.include_router(ai_router)
 app.include_router(report_router)
+app.include_router(forecasting_router)
 
 
 @app.exception_handler(SQLAlchemyError)

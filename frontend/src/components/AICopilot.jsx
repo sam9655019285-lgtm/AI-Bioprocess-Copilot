@@ -74,7 +74,7 @@ function ListSection({ title, items, empty }) {
 }
 
 /** Contextual decision-support assistant for one stored experiment (deterministic context, Gemini interpretation). */
-export default function AICopilot({ active, dataVersion, aiAnalyses = {}, onCopilotReply }) {
+export default function AICopilot({ active, dataVersion, aiAnalyses = {}, forecastSettings = {}, onCopilotReply }) {
   const [configured, setConfigured] = useState(null)
   const [experiment, setExperiment] = useState(null)
   const [context, setContext] = useState(null) // { analysis, anomalies } for the summary
@@ -83,11 +83,14 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, onCopi
   const [includeScaleUp, setIncludeScaleUp] = useState(false)
   const [targetScale, setTargetScale] = useState(100)
   const [includeAI, setIncludeAI] = useState(true)
+  const [includeForecast, setIncludeForecast] = useState(false)
   const [reply, setReply] = useState(null)
   const [pending, setPending] = useState(null) // question being answered
   const [error, setError] = useState(null)
   const experimentId = experiment?.experiment_id
   const previousAI = experimentId ? aiAnalyses[experimentId] : null
+  // Forecast settings last used on the Forecasting page; the backend recomputes the forecast from them.
+  const forecast = experimentId ? forecastSettings[experimentId] : null
 
   useEffect(() => {
     if (!active) return
@@ -131,6 +134,7 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, onCopi
       const body = { message: text }
       if (includeScaleUp) body.scale_up = await buildPreservedScaleUp(experimentId, targetScale)
       if (includeAI && previousAI) body.ai_analysis = previousAI.analysis
+      if (includeForecast && forecast) body.forecast = forecast
       const answer = await askCopilot(experimentId, body)
       setReply(answer)
       onCopilotReply?.(experimentId, answer)
@@ -195,6 +199,12 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, onCopi
               <label className="ai-checkbox">
                 <input type="checkbox" checked={includeAI} onChange={(e) => setIncludeAI(e.target.checked)} />
                 Include the AI Process Analysis from {new Date(previousAI.generated_at).toLocaleTimeString()}
+              </label>
+            )}
+            {forecast && (
+              <label className="ai-checkbox">
+                <input type="checkbox" name="include-forecast" checked={includeForecast} onChange={(e) => setIncludeForecast(e.target.checked)} />
+                Include the illustrative process forecast (settings from the Forecasting page)
               </label>
             )}
           </div>
