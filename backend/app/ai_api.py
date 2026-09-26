@@ -12,7 +12,7 @@ from . import repository as repo
 from .ai_analysis import AIAnalysisRequest, AIAnalysisResponse, run_ai_analysis
 from .comparison import ComparisonRequest, require_pair
 from .comparison_ai import ComparisonInterpretation, ComparisonInterpretationResponse, interpret_comparison
-from .copilot import CopilotAnswer, CopilotRequest, CopilotResponse, ask_copilot
+from .copilot import AlertNotFound, CopilotAnswer, CopilotRequest, CopilotResponse, ask_copilot
 from .db import get_session
 from .db_models import ExperimentRow
 from .gemini_service import GeminiNotConfigured, GeminiProviderError, GeminiResponseError, Generator
@@ -86,6 +86,8 @@ def _call_gemini(action, what: str):
         raise
     except ScaleUpError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc))
+    except AlertNotFound as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc))
     except GeminiNotConfigured:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, NOT_CONFIGURED)
     except GeminiProviderError as exc:

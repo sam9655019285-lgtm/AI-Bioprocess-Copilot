@@ -50,6 +50,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 14:** Advanced Scale-Up Modeling — illustrative engineering estimates (kLa, P/V, tip speed, OTR/OUR, agitation and aeration scaling strategies) inside the Scale-Up page.
 - **Phase 15:** Process Forecasting & What-If Scenarios — an Illustrative Process Forecast (exponential/logistic cell density, linear DO/pH/temperature trends) on the new **Forecasting** tab.
 - **Phase 16:** Experiment Planning — "What should I test next?": deterministic candidate experiment conditions within allowed ranges on the new **Experiment Planning** tab, with an optional Gemini explanation.
+- **Phase 17:** Real-Time Bioprocess Monitoring & Alerts — live alerts from the existing anomaly rules on simulator data (Simulated Bioreactor page and Command Center), a labelled SIMULATED DISTURBANCE for demos, and an optional AI Copilot explanation of an alert.
 
 ## API
 
@@ -321,6 +322,16 @@ Open **Experiment Planning**, select a reference experiment, an objective and (o
 - **Explain with AI** (`POST /api/experiments/{id}/plan/interpret`) is called only on click. The backend regenerates the plan and sends only the plan (no observation history) to Gemini, whose output is labelled AI INTERPRETATION. Gemini does not generate or change candidates.
 - **Limitations:** no outcome prediction or ML; one-at-a-time designs miss interactions; the comparison design is very small; the reference is a single run; default ranges are generic.
 
+## Real-Time Monitoring & Alerts (Phase 17)
+
+> **Live alerts report that a prototype monitoring rule was met. An alert does not prove a biological problem, there is no risk score, and nothing controls the bioreactor — the scientist decides what to investigate.**
+
+- **Detection is not duplicated.** For every simulator step, `backend/app/monitoring.py` (`LiveMonitor`) re-runs the existing `anomaly.detect()` on a bounded window of the run's observations (last 1000, ≈ 500 h at the default step) and compares the result with the previous step. Alerts are session-only: nothing is written to the database (saved runs store their observations as before, so the same findings are available on the **Anomalies** page).
+- **Stable alert keys** (anomaly `finding_id`s are index-based): range / trend / data-coverage gap → `type:parameter:start_hours`; sudden change → `change:parameter:end_hours`; co-occurrence → `cooccurrence:end_hours`. A growing episode is one alert: `new` once, then `updated` (e.g. severity ATTENTION → SIGNIFICANT, which asks for acknowledgement again). Data-coverage notes without a culture time (e.g. "parameter never recorded") are not live alerts; they stay on the Anomalies page.
+- **Where:** the **Simulated Bioreactor** page shows the Live alerts timeline (severity, culture time, evidence, evidence points, acknowledge) and the **SIMULATED DISTURBANCE** control (software-injected step change, e.g. temperature +3 °C, recorded in the observation `notes`; not a biological intervention). The **Command Center** shows a compact summary (unacknowledged count, latest alerts, link). No new tab.
+- **Explain with AI** (only on click, only for runs saved to an experiment): the browser sends only `{"alert": {"alert_id": ...}}` to `POST /api/experiments/{id}/copilot`; the backend re-detects from stored observations, adds the matching finding (≤ 50 evidence points) as `focus_alert` to the existing Copilot context, or returns 404 without calling Gemini. The answer is labelled AI INTERPRETATION.
+- **Limitations:** alerts live in the browser session (cleared on reset; marked stale when the connection closes; gone after reload). An episode longer than the 1000-observation window gets a new start and therefore a new key. Detection runs in the simulator loop (~9 ms per step with a full window). Only the simulator is monitored; no real equipment.
+
 ## Anomalies (deterministic process checks)
 
 Open **Anomalies** and select an experiment to answer *"Is anything unusual happening in this experiment?"*. Checks run on the stored observations (`backend/app/anomaly.py`); nothing is stored, no AI or machine learning is used, and no risk score is produced. Each finding has a severity, type, parameter, culture time, message and expandable **evidence** (values, times, thresholds/ranges, changes, the observations involved).
@@ -402,8 +413,10 @@ The model constants are **not** calibrated to any cell line or process. Everythi
 |---|---|
 | client → server | `{"action": "start", "config": {...}, "save_to": "EXP-ID"}` — start a new run (or resume a stopped one); `save_to` is optional |
 | client → server | `{"action": "stop"}` / `{"action": "reset"}` |
+| client → server | `{"action": "disturb", "parameter": "temperature_c" \| "ph" \| "dissolved_oxygen_percent" \| "agitation_rpm", "offset": number}` — SIMULATED DISTURBANCE (Phase 17); offset limits ±5 °C, ±1 pH, ±50 % air sat., ±300 rpm |
 | server → client | `{"type": "status", "status": "simulating" \| "stopped", "data_source": "simulated", "run": {...} \| null}` |
 | server → client | `{"type": "observation", "data_source": "simulated", "observation": {...}, "saved": true \| false \| null}` |
+| server → client | `{"type": "alert", "event": "new" \| "updated", "alert": {"alert_id", "experiment_id", "saved", "detected_at_hours", "finding"}}` — live alert (Phase 17), sent after the observation that caused it |
 | server → client | `{"type": "persistence_error", "message": "..."}` — saving failed; the simulation continues |
 | server → client | `{"type": "error", "message": "..."}` |
 

@@ -19,6 +19,7 @@ from .anomaly import analyze_anomalies
 from .db_models import ExperimentRow
 from .forecasting import ForecastRequest, forecast_experiment, forecast_summary
 from .gemini_service import AIAnalysis, Generator
+from .monitoring import keyed_findings
 from .scaleup import ScaleUpRequest, simulate_scale_up
 
 NOTICE = (
@@ -26,6 +27,7 @@ NOTICE = (
     "replace scientist or process-engineering judgment."
 )
 MAX_FINDINGS_IN_CONTEXT = 40  # most severe first; the rest are counted, not sent
+MAX_ALERT_POINTS = 50  # evidence points of a focused live alert (latest first kept)
 
 SYSTEM_INSTRUCTION = """You are the AI Copilot of a cell-culture bioprocess development application.
 You answer a scientist's question about ONE experiment, using ONLY the supplied experiment context.
@@ -49,6 +51,9 @@ Rules:
 - A previous AI process analysis, when present, is an earlier AI interpretation, not fact.
 - An illustrative process forecast, when present, is a simple model estimate from the application (not a validated
   prediction); interpret it with its assumptions and limitations and do not recalculate it.
+- A focused live alert, when present, is a finding of the application's deterministic monitoring rules. Explain what
+  changed, which supplied data supports it, what might be worth inspecting and what remains uncertain. An alert does not
+  prove a biological problem; do not confirm one, do not give a risk score and do not give bioreactor control instructions.
 - Use concise, scientist-friendly language.
 
 Output JSON matching the schema:
@@ -67,6 +72,18 @@ class CopilotAnswer(BaseModel):
     suggested_questions: list[str] = Field(max_length=6)
 
 
+class AlertNotFound(LookupError):
+    pass
+
+
+class AlertRef(BaseModel):
+    """Identifies a live alert (Phase 17); the finding itself is re-detected from stored data, never taken from the browser."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    alert_id: str = Field(min_length=1, max_length=200)
+
+
 class CopilotRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
@@ -78,6 +95,7 @@ class CopilotRequest(BaseModel):
     forecast: ForecastRequest | None = Field(
         default=None, description="Optional forecast settings; the forecast is recomputed here and summarised (Phase 15)."
     )
+    alert: AlertRef | None = Field(default=None, description="Optional live alert to explain (Phase 17).")
 
 
 class CopilotContextInfo(BaseModel):
@@ -120,6 +138,17 @@ def build_copilot_context(session: Session, row: ExperimentRow, request: Copilot
         context["previous_ai_process_analysis"] = {
             "note": "Earlier AI-generated interpretation (Phase 8). Not deterministic fact.",
             **request.ai_analysis.model_dump(),
+        }
+    if request.alert is not None:
+        finding = keyed_findings(anomalies.findings).get(request.alert.alert_id)
+        if finding is None:
+            raise AlertNotFound(f"Alert '{request.alert.alert_id}' was not found in the stored data of this experiment.")
+        focus = finding.model_dump(mode="json")
+        focus["points"] = focus["points"][-MAX_ALERT_POINTS:]
+        context["focus_alert"] = {
+            "note": "Live alert selected by the scientist; re-detected from stored observations by the deterministic rules.",
+            "alert_id": request.alert.alert_id,
+            "finding": focus,
         }
     if request.forecast is not None:
         context["illustrative_process_forecast"] = forecast_summary(forecast_experiment(session, row, request.forecast))

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getExperimentAnalysis, getExperimentAnomalies, simulateScaleUp } from '../api.js'
 import BioreactorVessel from './BioreactorVessel.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
+import LiveAlerts from './LiveAlerts.jsx'
 import MetricCard from './MetricCard.jsx'
 import ProcessTrendCharts from './ProcessTrendCharts.jsx'
 import SourceBadge from './SourceBadge.jsx'
@@ -184,6 +185,13 @@ export default function CommandCenter({
                 Illustrative visualization of the {liveLatest ? 'live simulator values' : 'latest stored values'}; animated only
                 while a simulator run for this experiment is running.
               </p>
+            </Panel>
+
+            <Panel title="Live alerts" action={<LinkButton onClick={() => go('simulator')}>Open Simulated Bioreactor</LinkButton>}>
+              {sim.run && !liveRun && (
+                <p className="muted small-note">The active simulator run ({sim.run.experiment_id}) is not saving to this experiment.</p>
+              )}
+              <LiveAlerts sim={sim} compact onNavigate={onNavigate} />
             </Panel>
 
             <Panel title="Process status" action={<LinkButton onClick={() => go('monitoring')}>Analyze Process</LinkButton>}>

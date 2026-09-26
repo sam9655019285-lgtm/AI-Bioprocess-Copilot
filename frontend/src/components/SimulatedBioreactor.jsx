@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { getObservationSchema } from '../api.js'
 import { MAX_HISTORY } from '../useSimulator.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
+import LiveAlerts from './LiveAlerts.jsx'
 import MetricCard from './MetricCard.jsx'
 import ObservationTable from './ObservationTable.jsx'
 import TrendChart from './TrendChart.jsx'
@@ -41,12 +42,22 @@ const CHARTS = [
   { dataKey: 'cell_density', title: 'Cell density', unit: '×10⁶ cells/mL', digits: 2, minSpan: 1 },
 ]
 
+// SIMULATED DISTURBANCE presets (Phase 17): software-injected step changes to demonstrate live alerts.
+const DISTURBANCES = [
+  { parameter: 'temperature_c', offset: 3, label: 'Temperature +3 °C' },
+  { parameter: 'temperature_c', offset: -3, label: 'Temperature −3 °C' },
+  { parameter: 'ph', offset: -0.5, label: 'pH −0.5' },
+  { parameter: 'dissolved_oxygen_percent', offset: -30, label: 'DO −30 % air sat.' },
+  { parameter: 'agitation_rpm', offset: 150, label: 'Agitation +150 rpm' },
+]
+
 const RECENT_ROWS = 10
 const TABLE_EXCLUDE = new Set(['feed_rate', 'notes'])
 
 /** `sim` is the app-wide simulator connection (useSimulator in App), shared with the Bioreactor view. */
 export default function SimulatedBioreactor({ sim, active, dataVersion, onDataChanged }) {
   const [config, setConfig] = useState(DEFAULT_CONFIG)
+  const [disturbance, setDisturbance] = useState(0)
   const [experiment, setExperiment] = useState(null) // stored SIMULATED experiment to save into, or null
   const [fields, setFields] = useState(null)
 
@@ -209,6 +220,28 @@ export default function SimulatedBioreactor({ sim, active, dataVersion, onDataCh
           <MetricCard key={m.key} label={m.label} value={latest?.[m.key]} unit={m.unit} digits={m.digits} />
         ))}
       </div>
+
+      {sim.run && (
+        <div className="disturbance" data-testid="disturbance">
+          <span className="cat-badge cat-assumption">SIMULATED DISTURBANCE</span>
+          <select name="disturbance" value={disturbance} onChange={(e) => setDisturbance(Number(e.target.value))} aria-label="Simulated disturbance">
+            {DISTURBANCES.map((d, i) => (
+              <option key={d.label} value={i}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="secondary small" disabled={!connected} onClick={() => sim.disturb(DISTURBANCES[disturbance].parameter, DISTURBANCES[disturbance].offset)}>
+            Inject disturbance
+          </button>
+          <span className="muted small-note">
+            Software-injected step change to demonstrate live alerts. It is not a biological intervention and the simulated
+            response is not validated.
+          </span>
+        </div>
+      )}
+
+      <LiveAlerts sim={sim} />
 
       <h3>Live trends</h3>
       {sim.history.length === 0 ? (

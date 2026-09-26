@@ -10,10 +10,17 @@ Client -> server
                                                           observation in that SIMULATED experiment
     {"action": "stop"}                                    pause streaming (state is kept)
     {"action": "reset"}                                   discard the run
+    {"action": "disturb", "parameter": "temperature_c", "offset": 3}
+                                                          SIMULATED DISTURBANCE (Phase 17): step-shift one value of
+                                                          the current run (temperature_c, ph, dissolved_oxygen_percent,
+                                                          agitation_rpm) to demonstrate live alerts
 
 Server -> client
     {"type": "status", "status": "simulating" | "stopped", "data_source": "simulated", "run": {...} | null}
     {"type": "observation", "data_source": "simulated", "observation": {...Observation}, "saved": true | false | null}
+    {"type": "alert", "event": "new" | "updated", "alert": {...}}
+                                                          live alert from the existing anomaly rules (Phase 17,
+                                                          see monitoring.py); sent after the observation that caused it
     {"type": "persistence_error", "message": "..."}      saving failed; the stream carries on
     {"type": "error", "message": "..."}
 """
@@ -30,7 +37,8 @@ from pydantic import ValidationError
 from . import repository as repo
 from .db import session_scope
 from .models import DataSource, Observation
-from .simulator import BioreactorSimulator, SimulatorConfig
+from .monitoring import LiveMonitor
+from .simulator import BioreactorSimulator, DisturbanceError, SimulatorConfig
 
 DATA_SOURCE = "simulated"
 
@@ -77,6 +85,7 @@ class SimulatorSession:
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
         self.simulator: BioreactorSimulator | None = None
+        self.monitor: LiveMonitor | None = None  # live alerts for the current run (session-only)
         self.save_to: str | None = None
         self.task: asyncio.Task | None = None
         self.send_lock = asyncio.Lock()
@@ -128,6 +137,7 @@ class SimulatorSession:
                     config = config.model_copy(update={"experiment_id": save_to, "volume_liters": scale})
                 experiment_id = config.experiment_id or f"SIM-{config.volume_liters}L-{datetime.now():%Y%m%d-%H%M%S}"
                 self.simulator = BioreactorSimulator(config, experiment_id)
+                self.monitor = LiveMonitor(experiment_id)
                 self.save_to = save_to or None
             self.task = asyncio.create_task(self._stream())
             await self.send_status()
@@ -137,7 +147,16 @@ class SimulatorSession:
         elif action == "reset":
             await self.cancel()
             self.simulator = None
+            self.monitor = None
             self.save_to = None
+            await self.send_status()
+        elif action == "disturb":
+            if self.simulator is None:
+                return await self.send({"type": "error", "message": "Invalid disturbance: there is no simulated run to disturb."})
+            try:
+                self.simulator.apply_disturbance(message.get("parameter"), message.get("offset"))
+            except DisturbanceError as exc:
+                return await self.send({"type": "error", "message": str(exc)})
             await self.send_status()
         else:
             await self.send({"type": "error", "message": f"Unknown action: {action!r}"})
@@ -160,12 +179,15 @@ class SimulatorSession:
                         "message": f"Could not save the observation at {observation.culture_time_hours} h "
                                    f"to '{self.save_to}'. The simulation continues.",
                     })
+            events = self.monitor.add(observation, saved=saved is True)
             await self.send({
                 "type": "observation",
                 "data_source": DATA_SOURCE,
                 "observation": observation.model_dump(),
                 "saved": saved,
             })
+            for event in events:
+                await self.send(event)
             await asyncio.sleep(sim.config.interval_seconds)
 
     async def cancel(self):
