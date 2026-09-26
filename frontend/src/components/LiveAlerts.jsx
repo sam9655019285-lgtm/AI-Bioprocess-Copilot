@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { askCopilot } from '../api.js'
+import FindingPrecedents from './FindingPrecedents.jsx'
 
 /*
  * Live Alerts (Phase 17): alerts streamed by the simulator WebSocket. Detection is done by the
@@ -22,7 +23,7 @@ function SeverityBadge({ severity }) {
   return <span className={`sev-badge sev-${severity}`}>{severity.toUpperCase()}</span>
 }
 
-function AlertDetail({ alert, explanation, onExplain }) {
+function AlertDetail({ alert, explanation, onExplain, includePrecedents, onIncludePrecedents, onOpenComparison }) {
   const f = alert.finding
   const points = f.points.slice(-MAX_POINTS)
   return (
@@ -65,7 +66,18 @@ function AlertDetail({ alert, explanation, onExplain }) {
         An alert reports that a prototype monitoring rule was met. It does not prove a biological problem; the scientist
         decides what to investigate.
       </p>
+      <FindingPrecedents
+        finding={f}
+        experimentId={alert.experiment_id}
+        alertId={alert.alert_id}
+        stored={alert.saved}
+        onOpenComparison={onOpenComparison}
+      />
       <div className="alert-ai">
+        <label className="ai-checkbox">
+          <input type="checkbox" name="include-precedents" checked={includePrecedents} disabled={!alert.saved || alert.stale} onChange={(e) => onIncludePrecedents(e.target.checked)} />
+          Include precedents
+        </label>{' '}
         <button type="button" className="secondary small" onClick={onExplain} disabled={!alert.saved || alert.stale || explanation?.loading}>
           {explanation?.loading ? 'Asking Gemini…' : 'Explain with AI'}
         </button>{' '}
@@ -100,8 +112,9 @@ function AlertDetail({ alert, explanation, onExplain }) {
 }
 
 /** `sim` is the shared simulator connection. `compact` renders the Command Center summary. */
-export default function LiveAlerts({ sim, compact = false, onNavigate }) {
+export default function LiveAlerts({ sim, compact = false, onNavigate, onOpenComparison }) {
   const [openId, setOpenId] = useState(null)
+  const [withPrecedents, setWithPrecedents] = useState({}) // run|alert -> include precedents in the AI request
   const [explanations, setExplanations] = useState({})
   const alerts = newestFirst(sim.alerts)
 
@@ -133,7 +146,9 @@ export default function LiveAlerts({ sim, compact = false, onNavigate }) {
     const key = uid(alert)
     setExplanations((m) => ({ ...m, [key]: { loading: true } }))
     try {
-      const reply = await askCopilot(alert.experiment_id, { message: EXPLAIN_QUESTION, alert: { alert_id: alert.alert_id } })
+      const ref = { alert_id: alert.alert_id }
+      if (withPrecedents[key]) ref.include_precedents = true
+      const reply = await askCopilot(alert.experiment_id, { message: EXPLAIN_QUESTION, alert: ref })
       setExplanations((m) => ({ ...m, [key]: { reply } }))
     } catch (err) {
       setExplanations((m) => ({ ...m, [key]: { error: err.message } }))
@@ -175,7 +190,16 @@ export default function LiveAlerts({ sim, compact = false, onNavigate }) {
                   </button>
                 )}
               </div>
-              {openId === uid(a) && <AlertDetail alert={a} explanation={explanations[uid(a)]} onExplain={() => explain(a)} />}
+              {openId === uid(a) && (
+                <AlertDetail
+                  alert={a}
+                  explanation={explanations[uid(a)]}
+                  onExplain={() => explain(a)}
+                  includePrecedents={Boolean(withPrecedents[uid(a)])}
+                  onIncludePrecedents={(on) => setWithPrecedents((m) => ({ ...m, [uid(a)]: on }))}
+                  onOpenComparison={onOpenComparison}
+                />
+              )}
             </li>
           ))}
         </ol>

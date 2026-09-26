@@ -54,6 +54,12 @@ export default function App() {
   // Latest forecast settings per experiment (in memory only), so the Copilot can optionally include the forecast.
   const [forecastSettings, setForecastSettings] = useState({})
   const onForecastSettings = useCallback((experimentId, body) => setForecastSettings((m) => ({ ...m, [experimentId]: body })), [])
+  // Set by "Compare with this run" (Phase 18 precedents); a new object each time so it re-triggers.
+  const [comparisonRequest, setComparisonRequest] = useState(null)
+  const openComparison = useCallback((experimentAId, experimentBId) => {
+    setComparisonRequest({ experimentAId, experimentBId })
+    setPageId('comparison')
+  }, [])
   const openAnalysis = useCallback((experimentId) => {
     setAnalysisRequest({ experimentId })
     setPageId('monitoring')
@@ -92,6 +98,8 @@ export default function App() {
             onDataChanged={onDataChanged}
             analysisRequest={analysisRequest}
             onOpenAnalysis={openAnalysis}
+            comparisonRequest={comparisonRequest}
+            onOpenComparison={openComparison}
             aiAnalyses={aiAnalyses}
             onAIAnalysis={onAIAnalysis}
             scaleUpScenarios={scaleUpScenarios}

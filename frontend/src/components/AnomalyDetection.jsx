@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getExperimentAnomalies } from '../api.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
+import FindingPrecedents from './FindingPrecedents.jsx'
 import MetricCard from './MetricCard.jsx'
 import SourceBadge from './SourceBadge.jsx'
 
@@ -40,7 +41,7 @@ function SeverityBadge({ severity }) {
   return <span className={`sev-badge sev-${severity}`}>{severity.toUpperCase()}</span>
 }
 
-function FindingItem({ finding: f }) {
+function FindingItem({ finding: f, experimentId, onOpenComparison }) {
   const d = DECIMALS[f.parameter] ?? 2
   const value = (v) => withUnit(v.toFixed(d), f.unit)
   const signed = (v, digits = d) => (v > 0 ? '+' : '') + v.toFixed(digits)
@@ -114,6 +115,7 @@ function FindingItem({ finding: f }) {
             </table>
           </div>
         )}
+        <FindingPrecedents finding={f} experimentId={experimentId} stored onOpenComparison={onOpenComparison} />
       </div>
     </details>
   )
@@ -194,7 +196,7 @@ function MonitoringConfiguration({ config }) {
 }
 
 /** Deterministic, rule-based findings with evidence for a stored experiment (no AI, nothing stored). */
-export default function AnomalyDetection({ active, dataVersion }) {
+export default function AnomalyDetection({ active, dataVersion, onOpenComparison }) {
   const [experiment, setExperiment] = useState(null)
   const [report, setReport] = useState(null)
   const [error, setError] = useState(null)
@@ -312,7 +314,7 @@ export default function AnomalyDetection({ active, dataVersion }) {
           ) : (
             <div className="findings">
               {visible.map((f) => (
-                <FindingItem key={f.finding_id} finding={f} />
+                <FindingItem key={`${experimentId}|${f.finding_id}`} finding={f} experimentId={experimentId} onOpenComparison={onOpenComparison} />
               ))}
             </div>
           )}

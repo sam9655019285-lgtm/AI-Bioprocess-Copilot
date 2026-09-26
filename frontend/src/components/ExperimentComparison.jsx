@@ -271,7 +271,7 @@ function Interpretation({ result }) {
 }
 
 /** Deterministic side-by-side comparison of two stored experiments, with optional Gemini interpretation. */
-export default function ExperimentComparison({ active, dataVersion }) {
+export default function ExperimentComparison({ active, dataVersion, comparisonRequest }) {
   const [a, setA] = useState(null)
   const [b, setB] = useState(null)
   const [result, setResult] = useState(null)
@@ -285,6 +285,13 @@ export default function ExperimentComparison({ active, dataVersion }) {
   const bId = b?.experiment_id
   const same = Boolean(aId) && aId === bId
   const pairKey = `${aId}|${bId}`
+
+  // "Compare with this run" (Phase 18 precedents) pre-selects both experiments here.
+  useEffect(() => {
+    if (!comparisonRequest) return
+    setA({ experiment_id: comparisonRequest.experimentAId })
+    setB({ experiment_id: comparisonRequest.experimentBId })
+  }, [comparisonRequest])
 
   useEffect(() => {
     if (!active) return

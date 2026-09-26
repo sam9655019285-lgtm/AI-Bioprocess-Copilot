@@ -144,6 +144,11 @@ export function interpretPlan(experimentId, body = {}) {
   return request(`${experimentPath(experimentId)}/plan/interpret`, json('POST', body))
 }
 
+// Finding precedents (Phase 18): exact same-rule matches in stored experiments; deterministic, no Gemini
+export function findPrecedents(query) {
+  return request('/api/precedents/search', json('POST', query))
+}
+
 // Experiment comparison (Phase 10): deterministic, read-only; Gemini interpretation is optional
 export function compareExperiments(experimentAId, experimentBId) {
   return request('/api/experiments/compare', json('POST', { experiment_a_id: experimentAId, experiment_b_id: experimentBId }))

@@ -523,3 +523,15 @@ button.danger { background: var(--bad); color: #fff; }
 .alert-ai-reply { border-top: 1px dashed var(--border); margin-top: 8px; padding-top: 6px; }
 .live-alerts-compact .live-alert-list li { font-size: 0.85rem; margin: 4px 0; }
 .live-alerts-compact .sev-badge { min-width: 0; margin-right: 4px; }
+
+/* Phase 18: Finding precedents */
+.precedents { border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 8px; }
+.prec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.prec-summary { font-weight: 600; margin: 8px 0 4px; }
+.prec-legend { font-size: 0.78rem; color: var(--muted); margin: 4px 0; }
+.prec-legend .cat-badge { margin-top: 0; }
+.prec-table td { vertical-align: top; }
+.prec-after { font-size: 0.82rem; margin-top: 4px; }
+.prec-message { font-size: 0.85rem; }
+.prec-relation { font-size: 0.72rem; color: var(--muted); }
+.prec-same { color: var(--series-b); font-weight: 600; }

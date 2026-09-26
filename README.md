@@ -51,6 +51,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 15:** Process Forecasting & What-If Scenarios — an Illustrative Process Forecast (exponential/logistic cell density, linear DO/pH/temperature trends) on the new **Forecasting** tab.
 - **Phase 16:** Experiment Planning — "What should I test next?": deterministic candidate experiment conditions within allowed ranges on the new **Experiment Planning** tab, with an optional Gemini explanation.
 - **Phase 17:** Real-Time Bioprocess Monitoring & Alerts — live alerts from the existing anomaly rules on simulator data (Simulated Bioreactor page and Command Center), a labelled SIMULATED DISTURBANCE for demos, and an optional AI Copilot explanation of an alert.
+- **Phase 18:** Alert Investigation — Finding Precedents: exact same-rule matches of an alert/finding in stored experiments, what the stored data showed afterwards, a "Compare with this run" hand-off and optional precedents in the Copilot explanation.
 
 ## API
 
@@ -92,6 +93,7 @@ Scale-up (Phase 6):
 | POST | `/api/experiments/{id}/forecast` | Illustrative process forecast (Phase 15): body `{horizon_hours?, cell_model: exponential\|logistic, carrying_capacity?, scenario?}`. 404 unknown experiment, 422 invalid input. Read-only |
 | POST | `/api/experiments/{id}/plan` | Experiment planning (Phase 16): body `{objective, constraints?, max_candidates?}`; deterministic candidate conditions. 404 unknown experiment, 422 invalid input. Read-only, no Gemini |
 | POST | `/api/experiments/{id}/plan/interpret` | Optional Gemini explanation of the generated candidates (Phase 16). 503 if Gemini is not configured. Nothing stored |
+| POST | `/api/precedents/search` | Finding precedents (Phase 18): body `{type, parameter?, direction?, related_parameters?, exclude_experiment_id?, current?, follow_up_hours?}`; exact same-rule matches in stored experiments + follow-up. 422 invalid input. Read-only, no Gemini |
 
 Errors: `404` unknown experiment, `409` duplicate ID or wrong data source, `422` invalid input, `503` database failure (friendly message, no stack trace).
 
@@ -321,6 +323,19 @@ Open **Experiment Planning**, select a reference experiment, an objective and (o
 - **DERIVED CALCULATION:** change from reference and relative position within the allowed range. **Warnings:** significant anomaly findings in the reference run (a baseline repeat may be appropriate first) and *extrapolation beyond observed conditions* for values outside the reference run's observed range.
 - **Explain with AI** (`POST /api/experiments/{id}/plan/interpret`) is called only on click. The backend regenerates the plan and sends only the plan (no observation history) to Gemini, whose output is labelled AI INTERPRETATION. Gemini does not generate or change candidates.
 - **Limitations:** no outcome prediction or ML; one-at-a-time designs miss interactions; the comparison design is very small; the reference is a single run; default ranges are generic.
+
+## Alert Investigation — Finding Precedents (Phase 18)
+
+> **Precedents are exact same-rule matches in stored data. They show what was recorded, not what caused an event, what will happen in the current run, or what to do. No causal inference is made from these historical observations.**
+
+Open an alert on the **Simulated Bioreactor** page (Live alerts) or a finding on the **Anomalies** page and click **Find precedents** (`backend/app/precedents.py`, `POST /api/precedents/search`; deterministic, read-only, no Gemini, no database changes).
+
+- **Exact matching** (no similarity, scores, ranking or ML): same finding type, same parameter and same direction (range: above/below; sudden change and trend: increased/decreased); co-occurrence: the same set of related parameters (no partial overlap). Findings come from re-running the existing `anomaly.detect()` (prototype default configuration) on each stored experiment.
+- **Search scope:** the 100 most recently created experiments (the cap and any skipped experiments are reported). An earlier matching episode in the run being investigated is included and labelled **Earlier in this run**; the finding itself is never its own precedent. Unsaved live runs search stored experiments only. Order is deterministic (same run first, then newest experiment first, then culture time) — not a ranking.
+- **What the stored data showed afterwards** (follow-up window: trigger time → +12 h; trigger = episode start for range/trend, interval end for changes): whether the parameter was inside its prototype range at the trigger or returned inside it (and when), the last stored value within the window, and later findings in the window. Nothing is extrapolated: if the stored run ends earlier, this is stated.
+- **Compare with this run** opens the existing **Experiment Comparison** page with both experiments preselected (existing comparison endpoint).
+- **Explain with AI → Include precedents** (saved runs only, on click): the browser sends only `{"alert": {"alert_id", "include_precedents": true}}`; the backend locates the finding, runs the search and adds a compact summary (≤ 5 precedents; no observations or evidence points) to the Copilot context. Gemini is instructed not to predict recovery, rank runs, claim causation or give settings.
+- **Limitations:** exact matching can find nothing on small datasets (no result is not a conclusion); matches use the prototype monitoring defaults; the search re-runs detection per request (~0.7 s for 100 experiments × 200 observations).
 
 ## Real-Time Monitoring & Alerts (Phase 17)
 

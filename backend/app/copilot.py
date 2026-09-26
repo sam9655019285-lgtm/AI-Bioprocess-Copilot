@@ -20,6 +20,7 @@ from .db_models import ExperimentRow
 from .forecasting import ForecastRequest, forecast_experiment, forecast_summary
 from .gemini_service import AIAnalysis, Generator
 from .monitoring import keyed_findings
+from .precedents import CurrentFinding, PrecedentQuery, find_precedents, precedent_summary, query_for
 from .scaleup import ScaleUpRequest, simulate_scale_up
 
 NOTICE = (
@@ -54,6 +55,9 @@ Rules:
 - A focused live alert, when present, is a finding of the application's deterministic monitoring rules. Explain what
   changed, which supplied data supports it, what might be worth inspecting and what remains uncertain. An alert does not
   prove a biological problem; do not confirm one, do not give a risk score and do not give bioreactor control instructions.
+- Precedents, when present, are same-rule matches in stored data: they show what was recorded in other runs (or earlier
+  in this run), not what caused the event, what will happen next or what the user should do. Do not predict recovery,
+  recommend settings, rank experiments, call one run better, claim causation or optimality, or give setpoint instructions.
 - Use concise, scientist-friendly language.
 
 Output JSON matching the schema:
@@ -82,6 +86,7 @@ class AlertRef(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     alert_id: str = Field(min_length=1, max_length=200)
+    include_precedents: bool = Field(default=False, description="Add a bounded same-rule precedent summary (Phase 18).")
 
 
 class CopilotRequest(BaseModel):
@@ -150,6 +155,10 @@ def build_copilot_context(session: Session, row: ExperimentRow, request: Copilot
             "alert_id": request.alert.alert_id,
             "finding": focus,
         }
+        criteria = query_for(finding) if request.alert.include_precedents else None
+        if criteria is not None:
+            query = PrecedentQuery(**criteria, current=CurrentFinding(experiment_id=row.experiment_id, alert_id=request.alert.alert_id))
+            context["focus_alert"]["precedents"] = precedent_summary(find_precedents(session, query))
     if request.forecast is not None:
         context["illustrative_process_forecast"] = forecast_summary(forecast_experiment(session, row, request.forecast))
     info = CopilotContextInfo(

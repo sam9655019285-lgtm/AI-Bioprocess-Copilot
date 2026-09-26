@@ -47,7 +47,7 @@ const DISTURBANCES = [
   { parameter: 'temperature_c', offset: 3, label: 'Temperature +3 °C' },
   { parameter: 'temperature_c', offset: -3, label: 'Temperature −3 °C' },
   { parameter: 'ph', offset: -0.5, label: 'pH −0.5' },
-  { parameter: 'dissolved_oxygen_percent', offset: -30, label: 'DO −30 % air sat.' },
+  { parameter: 'dissolved_oxygen_percent', offset: -35, label: 'DO −35 % air sat.' },
   { parameter: 'agitation_rpm', offset: 150, label: 'Agitation +150 rpm' },
 ]
 
@@ -55,7 +55,7 @@ const RECENT_ROWS = 10
 const TABLE_EXCLUDE = new Set(['feed_rate', 'notes'])
 
 /** `sim` is the app-wide simulator connection (useSimulator in App), shared with the Bioreactor view. */
-export default function SimulatedBioreactor({ sim, active, dataVersion, onDataChanged }) {
+export default function SimulatedBioreactor({ sim, active, dataVersion, onDataChanged, onOpenComparison }) {
   const [config, setConfig] = useState(DEFAULT_CONFIG)
   const [disturbance, setDisturbance] = useState(0)
   const [experiment, setExperiment] = useState(null) // stored SIMULATED experiment to save into, or null
@@ -241,7 +241,7 @@ export default function SimulatedBioreactor({ sim, active, dataVersion, onDataCh
         </div>
       )}
 
-      <LiveAlerts sim={sim} />
+      <LiveAlerts sim={sim} onOpenComparison={onOpenComparison} />
 
       <h3>Live trends</h3>
       {sim.history.length === 0 ? (
