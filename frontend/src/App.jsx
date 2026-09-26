@@ -8,6 +8,7 @@ import CommandCenter from './components/CommandCenter.jsx'
 import ExperimentComparison from './components/ExperimentComparison.jsx'
 import ExperimentData from './components/ExperimentData.jsx'
 import ExperimentHistory from './components/ExperimentHistory.jsx'
+import ExperimentPlanning from './components/ExperimentPlanning.jsx'
 import ProcessForecasting from './components/ProcessForecasting.jsx'
 import ProcessMonitoring from './components/ProcessMonitoring.jsx'
 import ReportGeneration from './components/ReportGeneration.jsx'
@@ -23,6 +24,7 @@ const PAGES = [
   { id: 'monitoring', label: 'Process Monitoring', Component: ProcessMonitoring },
   { id: 'anomalies', label: 'Anomalies', Component: AnomalyDetection },
   { id: 'forecasting', label: 'Forecasting', Component: ProcessForecasting },
+  { id: 'planning', label: 'Experiment Planning', Component: ExperimentPlanning },
   { id: 'scaleup', label: 'Scale-Up', Component: ScaleUpSimulator },
   { id: 'ai', label: 'AI Analysis', Component: AIProcessAnalysis },
   { id: 'copilot', label: 'AI Copilot', Component: AICopilot },

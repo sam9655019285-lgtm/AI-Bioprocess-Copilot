@@ -134,6 +134,16 @@ export function forecastExperiment(experimentId, body = {}) {
   return request(`${experimentPath(experimentId)}/forecast`, json('POST', body))
 }
 
+// Experiment planning (Phase 16): deterministic candidate conditions; nothing is stored
+export function planExperiment(experimentId, body = {}) {
+  return request(`${experimentPath(experimentId)}/plan`, json('POST', body))
+}
+
+// Optional Gemini explanation of the generated candidates (only on explicit user action)
+export function interpretPlan(experimentId, body = {}) {
+  return request(`${experimentPath(experimentId)}/plan/interpret`, json('POST', body))
+}
+
 // Experiment comparison (Phase 10): deterministic, read-only; Gemini interpretation is optional
 export function compareExperiments(experimentAId, experimentBId) {
   return request('/api/experiments/compare', json('POST', { experiment_a_id: experimentAId, experiment_b_id: experimentBId }))

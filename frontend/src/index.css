@@ -487,3 +487,21 @@ button.danger { background: var(--bad); color: #fff; }
 .fc-whatif { border-top: 1px solid var(--border); margin-top: 24px; }
 .fc-actions { display: flex; gap: 8px; }
 .fc-scenario-table td.wrap { white-space: normal; min-width: 200px; }
+
+/* Phase 16: Experiment Planning */
+.cat-user { color: var(--accent); }
+.cat-candidate { color: var(--series-b); }
+.cat-ai { color: var(--muted); }
+.plan-table input[type='number'] { width: 90px; }
+.plan-legend { font-size: 0.78rem; color: var(--muted); margin: 4px 0; }
+.plan-legend .cat-badge { margin-top: 0; }
+.plan-used { white-space: normal; min-width: 140px; }
+.plan-candidates { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.plan-candidate { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.plan-candidate h4 { margin: 0; }
+.plan-changed td { font-weight: 600; }
+.plan-extrap { color: var(--warn); font-size: 0.75rem; font-weight: 600; }
+.plan-rationale { font-size: 0.88rem; margin: 8px 0; padding-left: 18px; }
+.plan-warning { font-size: 0.85rem; margin: 8px 0; }
+.plan-ai { font-size: 0.88rem; border-top: 1px dashed var(--border); padding-top: 8px; }
+.plan-ai-summary { border-top: 1px solid var(--border); margin-top: 20px; }

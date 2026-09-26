@@ -49,6 +49,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 13:** Bioprocess Command Center — one-screen dashboard aggregating the existing results for a selected experiment.
 - **Phase 14:** Advanced Scale-Up Modeling — illustrative engineering estimates (kLa, P/V, tip speed, OTR/OUR, agitation and aeration scaling strategies) inside the Scale-Up page.
 - **Phase 15:** Process Forecasting & What-If Scenarios — an Illustrative Process Forecast (exponential/logistic cell density, linear DO/pH/temperature trends) on the new **Forecasting** tab.
+- **Phase 16:** Experiment Planning — "What should I test next?": deterministic candidate experiment conditions within allowed ranges on the new **Experiment Planning** tab, with an optional Gemini explanation.
 
 ## API
 
@@ -88,6 +89,8 @@ Scale-up (Phase 6):
 | POST | `/api/scale-up/simulate` | Illustrative scale-up scenario for a stored experiment. Read-only: writes nothing |
 | POST | `/api/scale-up/model` | Advanced scale-up modeling (Phase 14): engineering estimates with configurable assumptions. Read-only |
 | POST | `/api/experiments/{id}/forecast` | Illustrative process forecast (Phase 15): body `{horizon_hours?, cell_model: exponential\|logistic, carrying_capacity?, scenario?}`. 404 unknown experiment, 422 invalid input. Read-only |
+| POST | `/api/experiments/{id}/plan` | Experiment planning (Phase 16): body `{objective, constraints?, max_candidates?}`; deterministic candidate conditions. 404 unknown experiment, 422 invalid input. Read-only, no Gemini |
+| POST | `/api/experiments/{id}/plan/interpret` | Optional Gemini explanation of the generated candidates (Phase 16). 503 if Gemini is not configured. Nothing stored |
 
 Errors: `404` unknown experiment, `409` duplicate ID or wrong data source, `422` invalid input, `503` database failure (friendly message, no stack trace).
 
@@ -296,6 +299,27 @@ Open **Forecasting**, select an experiment: the backend (`backend/app/forecastin
 - **Labels:** OBSERVED DATA, MODEL ASSUMPTION, MODEL FORECAST, SCENARIO INPUT, SCENARIO RESULT, NOT AVAILABLE.
 - **AI Copilot:** optional checkbox "Include the illustrative process forecast". The browser sends only the forecast *settings*; the backend recomputes the forecast and passes a compact summary (model, parameters, end values, assumptions — no raw point lists) to Gemini, which interprets but never calculates it.
 - **Limitations:** extrapolation of simple empirical curves; no mechanistic, substrate, feed, temperature or scale effects; no confidence intervals; not validated for any cell line or bioreactor.
+
+## Experiment Planning (Phase 16)
+
+> **Phase 16 suggests candidate experimental conditions using deterministic design rules. It does not predict biological outcomes, and candidates are not claimed to be optimal or certain to work.** Nothing is applied, saved or created: there is no "apply" or "save as experiment" action.
+
+Open **Experiment Planning**, select a reference experiment, an objective and (optionally) allowed ranges, then click **Generate Candidates** (`backend/app/planning.py`, `POST /api/experiments/{id}/plan`).
+
+- **Reference (OBSERVED DATA):** the final observed value of temperature, pH, DO, agitation, aeration and feed rate. A parameter that was not recorded is NOT AVAILABLE and never invented.
+- **Allowed ranges:** a range entered by the user is a USER CONSTRAINT; otherwise the prototype monitoring default (`MonitoringConfig`, a PLANNING ASSUMPTION — not a cell-line limit) is used. Aeration and feed rate have no default and are held at the reference. Ranges must stay within the `Observation` field limits (e.g. pH 0–14, rates ≥ 0). A reference outside the range is clamped and reported.
+- **Design rules by objective** (identical input → identical output; up to `max_candidates`, default 5, max 8):
+
+| Objective (UI label) | Candidates |
+|---|---|
+| Explore conditions related to cell density | baseline repeat + one-at-a-time steps in both directions (step: user value or 10 % of the range); "explores sensitivity of cell density to this parameter" — no direction is claimed to improve it |
+| Maintain process stability | baseline repeat + smaller one-at-a-time steps (5 % of the range) |
+| Explore operating conditions | centre of the allowed ranges, then low/high of each parameter one at a time |
+| Compare candidate conditions | two-level design (4 runs; 2^(3−1) fractional for 3 parameters) over parameters with an entered range only |
+
+- **DERIVED CALCULATION:** change from reference and relative position within the allowed range. **Warnings:** significant anomaly findings in the reference run (a baseline repeat may be appropriate first) and *extrapolation beyond observed conditions* for values outside the reference run's observed range.
+- **Explain with AI** (`POST /api/experiments/{id}/plan/interpret`) is called only on click. The backend regenerates the plan and sends only the plan (no observation history) to Gemini, whose output is labelled AI INTERPRETATION. Gemini does not generate or change candidates.
+- **Limitations:** no outcome prediction or ML; one-at-a-time designs miss interactions; the comparison design is very small; the reference is a single run; default ranges are generic.
 
 ## Anomalies (deterministic process checks)
 

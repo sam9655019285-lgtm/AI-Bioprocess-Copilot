@@ -16,6 +16,8 @@ from .copilot import CopilotAnswer, CopilotRequest, CopilotResponse, ask_copilot
 from .db import get_session
 from .db_models import ExperimentRow
 from .gemini_service import GeminiNotConfigured, GeminiProviderError, GeminiResponseError, Generator
+from .planning import PlanRequest
+from .planning_ai import PlanInterpretation, PlanInterpretationResponse, interpret_plan
 from .scaleup import ScaleUpError
 
 router = APIRouter(tags=["ai"])
@@ -152,3 +154,20 @@ def interpret_experiment_comparison(
     if not gemini_service.is_configured():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, NOT_CONFIGURED)
     return _call_gemini(lambda: interpret_comparison(session, row_a, row_b, generate), "comparison interpretation")
+
+
+def get_planning_generator() -> Generator:
+    """The Gemini call for experiment-plan explanations (Phase 16); overridden in tests."""
+    return partial(gemini_service.gemini_generate, response_model=PlanInterpretation)
+
+
+@router.post("/api/experiments/{experiment_id}/plan/interpret", response_model=PlanInterpretationResponse)
+def interpret_experiment_plan(
+    experiment_id: str,
+    request: PlanRequest,
+    session: Session = Depends(get_session),
+    generate: Generator = Depends(get_planning_generator),
+):
+    """Optional Gemini explanation of the deterministic candidate experiments. Nothing is stored."""
+    row = _load(session, experiment_id, None)
+    return _call_gemini(lambda: interpret_plan(session, row, request, generate), "plan explanation")
