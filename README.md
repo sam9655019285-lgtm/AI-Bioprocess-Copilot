@@ -326,6 +326,10 @@ Open **Experiment Planning**, select a reference experiment, an objective and (o
 - **Explain with AI** (`POST /api/experiments/{id}/plan/interpret`) is called only on click. The backend regenerates the plan and sends only the plan (no observation history) to Gemini, whose output is labelled AI INTERPRETATION. Gemini does not generate or change candidates.
 - **Limitations:** no outcome prediction or ML; one-at-a-time designs miss interactions; the comparison design is very small; the reference is a single run; default ranges are generic.
 
+## UI design system
+
+Visual styling lives in `frontend/src/index.css`: design tokens on `:root` (colours for light and dark mode via `prefers-color-scheme`, spacing, radius, shadow, focus ring) and one shared layer for navigation, cards, buttons, form controls, tables, metric cards, alerts and badges. The scientific trust labels have one consistent badge language — OBSERVED DATA (teal), DERIVED CALCULATION (neutral), MODEL/SCENARIO ASSUMPTION (amber), MODEL FORECAST / SCENARIO RESULT / CANDIDATE (orange), AI INTERPRETATION (violet), NOT AVAILABLE (grey, dashed) — and severities read INFO (blue) · ATTENTION (amber) · SIGNIFICANT (red). Styling only; no behaviour depends on it.
+
 ## Stored Scale-Up Series (Phase 20)
 
 > **Cross-scale analysis compares stored observations and deterministic engineering calculations. It does not prove biological scale-up success, rank the runs or predict biological outcomes.**

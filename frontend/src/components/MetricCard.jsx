@@ -3,7 +3,7 @@ export default function MetricCard({ label, value, unit, digits = 2, caption, cl
   return (
     <div className={`metric ${className}`}>
       <div className="metric-label">{label}</div>
-      <div className="metric-value">
+      <div className={`metric-value${value == null ? ' metric-value-missing' : ''}`}>
         {value == null ? missing : value.toFixed(digits)}
         <span className="metric-unit">{(value != null && unit) || '\u00a0'}</span>
       </div>
