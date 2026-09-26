@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getExperimentAnalysis, simulateScaleUp } from '../api.js'
+import AdvancedScaleUpModeling from './AdvancedScaleUpModeling.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import MetricCard from './MetricCard.jsx'
 import SourceBadge from './SourceBadge.jsx'
@@ -445,6 +446,7 @@ export default function ScaleUpSimulator({ dataVersion, onScaleUpScenario }) {
           <p className="muted small-note">{result.disclaimer}</p>
         </div>
       )}
+      {loaded && <AdvancedScaleUpModeling experimentId={experimentId} targetScale={targetScale} />}
     </section>
   )
 }

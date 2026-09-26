@@ -111,6 +111,11 @@ export function simulateScaleUp(scenario) {
 }
 
 // AI process analysis (Phase 8; Gemini is called by the backend, the key never reaches the browser)
+// Advanced scale-up modeling (Phase 14; illustrative engineering estimates, read-only)
+export function modelScaleUp(scenario) {
+  return request('/api/scale-up/model', json('POST', scenario))
+}
+
 export function getAIStatus() {
   return request('/api/ai/status')
 }

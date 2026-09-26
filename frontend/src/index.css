@@ -460,3 +460,18 @@ button.danger { background: var(--bad); color: #fff; }
 .cc-ai { font-size: 0.9rem; line-height: 1.5; margin: 8px 0 4px; }
 .cc-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
 .cc-disclaimer { margin-top: 16px; }
+
+/* Advanced scale-up modeling (Phase 14) */
+.adv-model { border-top: 1px solid var(--border); margin-top: 28px; }
+.adv-model h4 { margin: 18px 0 6px; }
+.adv-note { font-size: 0.88rem; }
+.adv-formulas { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; padding: 0; margin: 4px 0 8px; font-size: 0.85rem; }
+.adv-cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.adv-card .metric-value { font-size: 1.2rem; }
+.cat-badge { display: inline-block; margin-top: 6px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; }
+.cat-observed { color: var(--accent); }
+.cat-derived { color: var(--text); }
+.cat-assumption { color: var(--warn); }
+.cat-scenario { color: var(--series-b); }
+.cat-na { color: var(--muted); }
+.adv-table td.wrap { white-space: normal; min-width: 180px; }

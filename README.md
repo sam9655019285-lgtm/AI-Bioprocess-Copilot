@@ -47,6 +47,7 @@ In development the Vite dev server proxies `/api/*` to the backend on `http://12
 - **Phase 11:** Report Generation — downloadable PDF experiment report built from the existing results; Gemini is not required.
 - **Phase 12:** Bioreactor Visualization — interactive, illustrative stirred-tank animation driven by the existing simulator state.
 - **Phase 13:** Bioprocess Command Center — one-screen dashboard aggregating the existing results for a selected experiment.
+- **Phase 14:** Advanced Scale-Up Modeling — illustrative engineering estimates (kLa, P/V, tip speed, OTR/OUR, agitation and aeration scaling strategies) inside the Scale-Up page.
 
 ## API
 
@@ -84,6 +85,7 @@ Scale-up (Phase 6):
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/scale-up/simulate` | Illustrative scale-up scenario for a stored experiment. Read-only: writes nothing |
+| POST | `/api/scale-up/model` | Advanced scale-up modeling (Phase 14): engineering estimates with configurable assumptions. Read-only |
 
 Errors: `404` unknown experiment, `409` duplicate ID or wrong data source, `422` invalid input, `503` database failure (friendly message, no stack trace).
 
@@ -249,6 +251,30 @@ uvicorn app.main:app --reload --port 8000 --env-file .env
 **Errors:** unknown experiment `404`; no key configured `503` (the page shows how to configure it and disables the button); Gemini/network failure or a response that does not match the schema `502` — no analysis is shown rather than a repaired or invented one. Process Monitoring, Anomalies and Scale-Up work without Gemini.
 
 **Limitations:** requires internet access and a Gemini API key (usage may be billed by Google); output quality depends on the model and is not verified beyond structural validation; the time series itself is summarised (statistics + findings), not sent point by point; no AI history is stored; no chat yet.
+
+## Advanced Scale-Up Modeling (Phase 14)
+
+> **The advanced scale-up module provides illustrative engineering calculations. It is not a validated industrial bioreactor model.** These calculations are illustrative engineering estimates and do not replace experimentally validated bioreactor design or process-development data.
+
+Shown at the bottom of the **Scale-Up** page (`backend/app/scaleup_modeling.py`, `POST /api/scale-up/model`). Source values are the latest recorded agitation, aeration, DO and cell density of the source experiment; the target uses the selected strategies. Results update automatically when the target scale, a strategy or an assumption changes. Nothing is stored and Gemini is not used.
+
+| Quantity | Formula | Unit |
+|---|---|---|
+| Power per volume | P/V = Np · ρ · N³ · D⁵ / V (N in rev/s, D in m, V in m³) | W/m³ |
+| Impeller tip speed | π · D · N | m/s |
+| kLa (estimated) | K · (P/V)^a · vvm^b | 1/h |
+| Dissolved O₂ concentration | C = DO% / 100 · C* (*DO concentration conversion assumption*) | mmol/L |
+| OTR | kLa · (C* − C) | mmol/L/h |
+| OUR | qO2 · X (qO2 in pmol/cell/h, X in 10⁶ cells/mL) | mmol/L/h |
+| Oxygen balance | OTR − OUR → "transfer capacity exceeds uptake" / "uptake exceeds transfer capacity" / "approximately balanced" (±10 %) | mmol/L/h |
+| Constant RPM | N_t = N_s | rpm |
+| Constant tip speed | N_t = N_s · D_s / D_t | rpm |
+| Constant P/V | N_t = N_s · (D_s/D_t)^(5/3) · (V_t/V_s)^(1/3) | rpm |
+| Constant vvm / constant gas flow | Q_t = vvm · V_t / Q_t = Q_s | L/min |
+
+**Model assumptions (configurable, labelled MODEL ASSUMPTION):** power number 5, liquid density 1000 kg/m³, K = 5 1/h, a = 0.4, b = 0.5, C* = 0.21 mmol/L, qO2 = 0.2 pmol/cell/h. **Impeller diameters are never assumed** — without them P/V, tip speed, kLa, OTR and geometry-based strategies are *Not available*; the "Use example geometry (D ∝ V^1/3)" button fills a labelled geometric-similarity example. Every value is labelled OBSERVED DATA, DERIVED CALCULATION, MODEL ASSUMPTION, SCENARIO RESULT or NOT AVAILABLE. The strategy comparison is not ranked.
+
+**Limitations:** the kLa correlation form and constants are illustrative (not vessel-specific), DO% is converted with a single C*, OUR at the target reuses the source cell density (no growth prediction), no gas hold-up, CO₂, shear, mixing time, heat transfer or CFD.
 
 ## Anomalies (deterministic process checks)
 

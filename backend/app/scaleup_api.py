@@ -6,6 +6,7 @@ from sqlmodel import Session
 from . import repository as repo
 from .db import get_session
 from .scaleup import ScaleUpError, ScaleUpRequest, ScaleUpResult, simulate_scale_up
+from .scaleup_modeling import ScaleUpModelError, ScaleUpModelRequest, ScaleUpModelResult, model_scale_up
 
 router = APIRouter(prefix="/api/scale-up", tags=["scale-up"])
 
@@ -19,4 +20,16 @@ def simulate(request: ScaleUpRequest, session: Session = Depends(get_session)):
     try:
         return simulate_scale_up(session, row, request)
     except ScaleUpError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc))
+
+
+@router.post("/model", response_model=ScaleUpModelResult)
+def model(request: ScaleUpModelRequest, session: Session = Depends(get_session)):
+    """Illustrative engineering estimates (kLa, P/V, tip speed, OTR/OUR, scaling strategies). Writes nothing."""
+    row = repo.get_experiment(session, request.source_experiment_id)
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"Experiment '{request.source_experiment_id}' not found.")
+    try:
+        return model_scale_up(session, row, request)
+    except ScaleUpModelError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc))
