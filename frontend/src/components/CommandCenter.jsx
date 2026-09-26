@@ -154,7 +154,6 @@ export default function CommandCenter({
         One view of an experiment, assembled from the application's existing analysis, anomaly checks, scale-up
         scenario, simulator and AI results. It adds no new calculations or scores.
       </p>
-      <DemoWorkflow sim={sim} onNavigate={onNavigate} />
       <ExperimentPicker
         sources={['manual', 'csv', 'simulated']}
         value={experiment}
@@ -168,7 +167,7 @@ export default function CommandCenter({
 
       {shown && (
         <>
-          <div className="cc-status" aria-label="Experiment status">
+          <div className="cc-status" aria-label="Experiment status" data-state={simState.id}>
             <div>
               <div className="muted small-label">Experiment</div>
               <strong>{a.experiment.experiment_id}</strong> <span className="muted">{a.experiment.name}</span>
@@ -217,7 +216,7 @@ export default function CommandCenter({
           </div>
 
           <div className="cc-grid">
-            <Panel title="Live bioreactor" action={<LinkButton onClick={() => go('bioreactor')}>Open Full Bioreactor View</LinkButton>}>
+            <Panel className="cc-primary cc-vessel-panel" title="Live bioreactor" action={<LinkButton onClick={() => go('bioreactor')}>Open Full Bioreactor View</LinkButton>}>
               {active && (
                 <div className="cc-vessel">
                   <BioreactorVessel
@@ -233,15 +232,7 @@ export default function CommandCenter({
                 while a simulator run for this experiment is running.
               </p>
             </Panel>
-
-            <Panel title="Live alerts" action={<LinkButton onClick={() => go('simulator')}>Open Simulated Bioreactor</LinkButton>}>
-              {sim.run && !liveRun && (
-                <p className="muted small-note">The active simulator run ({sim.run.experiment_id}) is not saving to this experiment.</p>
-              )}
-              <LiveAlerts sim={sim} compact onNavigate={onNavigate} />
-            </Panel>
-
-            <Panel title="Process status" action={<LinkButton onClick={() => go('monitoring')}>Analyze Process</LinkButton>}>
+            <Panel className="cc-primary" title="Process status" action={<LinkButton onClick={() => go('monitoring')}>Analyze Process</LinkButton>}>
               <dl className="details cc-details">
                 <dt>Observations</dt>
                 <dd>{a.observation_count}</dd>
@@ -260,19 +251,13 @@ export default function CommandCenter({
                 ))}
               </ul>
             </Panel>
-
-            <Panel title="Process trends" className="cc-wide">
-              {a.data_quality.enough_for_trends ? (
-                active && (
-                  <ProcessTrendCharts observations={a.observations} parameters={a.parameters.filter((p) => TREND_PARAMETERS.has(p.parameter))} />
-                )
-              ) : (
-                <p className="muted placeholder">Insufficient data for trend.</p>
+            <Panel className="cc-primary cc-attention" title="Live alerts" action={<LinkButton onClick={() => go('simulator')}>Open Simulated Bioreactor</LinkButton>}>
+              {sim.run && !liveRun && (
+                <p className="muted small-note">The active simulator run ({sim.run.experiment_id}) is not saving to this experiment.</p>
               )}
-              <p className="muted small-note">Stored observations for this experiment.</p>
+              <LiveAlerts sim={sim} compact onNavigate={onNavigate} />
             </Panel>
-
-            <Panel title="Findings" action={<LinkButton onClick={() => go('anomalies')}>View Anomalies</LinkButton>}>
+            <Panel className="cc-primary cc-attention" title="Findings" action={<LinkButton onClick={() => go('anomalies')}>View Anomalies</LinkButton>}>
               <p data-testid="cc-findings-counts">
                 <strong>{an.finding_count}</strong> finding(s): <span className="sev-badge sev-significant">SIGNIFICANT</span>{' '}
                 {an.counts.significant} · <span className="sev-badge sev-attention">ATTENTION</span> {an.counts.attention} ·{' '}
@@ -285,7 +270,7 @@ export default function CommandCenter({
               ) : (
                 <ul className="compare-findings" data-testid="cc-findings">
                   {an.findings.slice(0, MAX_FINDINGS).map((f) => (
-                    <li key={f.finding_id}>
+                    <li key={f.finding_id} className={`cc-finding cc-finding-${f.severity}`}>
                       <span className={`sev-badge sev-${f.severity}`}>{f.severity.toUpperCase()}</span> {f.message}
                     </li>
                   ))}
@@ -295,8 +280,17 @@ export default function CommandCenter({
                 <p className="muted small-note">Showing the {MAX_FINDINGS} most severe of {an.finding_count} (existing severity order).</p>
               )}
             </Panel>
-
-            <Panel title="Scale-up scenario" action={<LinkButton onClick={() => go('scaleup')}>Open Scale-Up Simulator</LinkButton>}>
+            <Panel title="Process trends" className="cc-primary cc-wide">
+              {a.data_quality.enough_for_trends ? (
+                active && (
+                  <ProcessTrendCharts observations={a.observations} parameters={a.parameters.filter((p) => TREND_PARAMETERS.has(p.parameter))} />
+                )
+              ) : (
+                <p className="muted placeholder">Insufficient data for trend.</p>
+              )}
+              <p className="muted small-note">Stored observations for this experiment.</p>
+            </Panel>
+            <Panel className="cc-secondary cc-wide" title="Scale-up scenario" action={<LinkButton onClick={() => go('scaleup')}>Open Scale-Up Simulator</LinkButton>}>
               {!scenario ? (
                 <p className="muted" data-testid="cc-scaleup-empty">No scale-up scenario selected.</p>
               ) : !snapshot ? (
@@ -306,6 +300,11 @@ export default function CommandCenter({
               ) : (
                 <>
                   <span className="treat-badge treat-scenario">Scenario calculation</span>
+                  <p className="cc-legend">
+                    <span className="cat-badge cat-scenario">SCENARIO INPUT</span> source and target scale ·{' '}
+                    <span className="cat-badge cat-derived">DERIVED CALCULATION</span> factor, volume, gas flow, feed ·{' '}
+                    <span className="cat-badge cat-assumption">SCENARIO ASSUMPTION</span> carried-over baseline values
+                  </p>
                   <dl className="details cc-details" data-testid="cc-scaleup">
                     <dt>Source</dt>
                     <dd>{num(snapshot.result.source.scale_liters)} L</dd>
@@ -326,8 +325,7 @@ export default function CommandCenter({
                 </>
               )}
             </Panel>
-
-            <Panel title="AI process analysis" action={<LinkButton onClick={() => go('ai')}>View full AI Analysis</LinkButton>}>
+            <Panel className="cc-secondary cc-ai-panel" title="AI process analysis" action={<LinkButton onClick={() => go('ai')}>View full AI Analysis</LinkButton>}>
               {ai ? (
                 <>
                   <span className="treat-badge treat-baseline">AI-generated interpretation</span>
@@ -340,8 +338,7 @@ export default function CommandCenter({
                 <p className="muted" data-testid="cc-ai-empty">AI analysis has not been generated for this experiment.</p>
               )}
             </Panel>
-
-            <Panel title="AI Copilot" action={<LinkButton onClick={() => go('copilot')}>Open AI Copilot</LinkButton>}>
+            <Panel className="cc-secondary cc-ai-panel" title="AI Copilot" action={<LinkButton onClick={() => go('copilot')}>Open AI Copilot</LinkButton>}>
               {copilot ? (
                 <>
                   <span className="treat-badge treat-baseline">AI-generated</span>
@@ -353,8 +350,7 @@ export default function CommandCenter({
                 <p className="muted">Ask about this experiment in the AI Copilot. No answer in this session yet.</p>
               )}
             </Panel>
-
-            <Panel title="Quick actions">
+            <Panel className="cc-quiet cc-wide" title="Quick actions">
               <div className="cc-actions">
                 {[
                   ['+ New Experiment', 'experiment-data'],
@@ -379,6 +375,7 @@ export default function CommandCenter({
           </p>
         </>
       )}
+      <DemoWorkflow sim={sim} onNavigate={onNavigate} />
     </section>
   )
 }

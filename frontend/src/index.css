@@ -749,3 +749,69 @@ td.num { font-variant-numeric: tabular-nums; }
   .tab-group-label { padding: 0 9px; }
   .page-context { margin-top: 0; }
 }
+
+/* =====================================================================================
+   UI/UX Phase 3 — Command Center visual hierarchy (presentation only)
+   ===================================================================================== */
+
+/* Header & run context */
+.command-center > .card-header { margin-bottom: var(--space-2); }
+.command-center > .disclaimer { margin-top: 0; }
+.command-center > .picker { border-color: var(--border-strong); }
+
+/* Process status band: state is visible at a glance (same content) */
+.cc-status { border-left: 4px solid var(--border-strong); gap: var(--space-4); padding: var(--space-4); }
+.cc-status[data-state='running'] { border-left-color: var(--ok); }
+.cc-status[data-state='paused'] { border-left-color: var(--warn); }
+.cc-status[data-state='error'] { border-left-color: var(--bad); }
+.cc-status strong { font-size: 1.02rem; }
+
+/* Key metrics: instrument panel */
+.cc-metrics { gap: var(--space-3); margin-top: var(--space-3); grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (min-width: 1180px) { .cc-metrics { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cc-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cc-metrics .metric { background: var(--surface); border-top: 3px solid var(--accent-soft); box-shadow: var(--shadow-sm); }
+.cc-metrics .metric-value { font-size: 1.7rem; }
+.cc-metrics .metric-value-missing { font-size: 1rem; }
+
+/* Panel tiers: primary process information, secondary analysis, quiet utilities */
+.cc-grid { margin-top: var(--space-5); }
+.cc-primary { border-color: var(--border-strong); }
+.cc-secondary { background: var(--surface-2); box-shadow: none; }
+.cc-quiet { background: transparent; box-shadow: none; border-style: dashed; }
+.cc-panel-head { padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); margin-bottom: var(--space-3); }
+
+/* Bioreactor: focal point without dominating */
+.cc-vessel-panel .cc-vessel { display: flex; justify-content: center; background: var(--surface-2); border-radius: var(--radius); padding: var(--space-3); }
+.cc-vessel .bioreactor-svg { max-width: 280px; width: 100%; }
+
+/* Attention: live alerts and findings */
+.cc-attention { border-top: 3px solid var(--warn); }
+.compare-findings.cc-findings, [data-testid='cc-findings'] { list-style: none; padding: 0; margin: var(--space-2) 0; }
+.cc-finding { border-left: 3px solid var(--border-strong); padding: 6px 10px; margin: 6px 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: var(--surface-2); font-size: 0.88rem; }
+.cc-finding-info { border-left-color: var(--info); }
+.cc-finding-attention { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+.cc-finding-significant { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--surface)); }
+[data-testid='cc-findings-counts'] .sev-badge { min-width: 0; }
+
+/* Scale-up trust legend */
+.cc-legend { font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0; line-height: 1.9; }
+.cc-legend .cat-badge { margin-top: 0; }
+
+/* AI previews: AI INTERPRETATION visual language */
+.cc-ai-panel { border-left: 3px solid var(--ai); }
+.cc-ai-panel .treat-badge { color: var(--ai); }
+.cc-ai-panel .cc-ai { color: var(--text); }
+
+/* Quick actions */
+.cc-actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card .cc-panel-head h3 { margin: 0; }
+
+/* Demo workflow: separate, clearly simulated */
+.command-center > .cc-demo { margin-top: var(--space-5); }
+
+@media (max-width: 760px) {
+  .cc-status { padding: var(--space-3); }
+  .cc-metrics .metric-value { font-size: 1.4rem; }
+  .cc-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
