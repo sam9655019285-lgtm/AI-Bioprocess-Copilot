@@ -885,3 +885,86 @@ td.num { font-variant-numeric: tabular-nums; }
   .bx-alert { animation: none; }
   .bx-figure { transition: none; }
 }
+
+/* =====================================================================================
+   UI/UX Phase 5 — Investigate · Model · Plan workspace (CSS only; no markup, text or behaviour changes)
+   ===================================================================================== */
+
+/* Workspace cue: a thin top edge per navigation group (Investigate · Model & Plan · AI & Output) */
+.card.anomalies { border-top: 3px solid var(--info); }
+.card.scaleup, .card.forecasting, .card.planning { border-top: 3px solid var(--accent); }
+.card.ai-analysis { border-top: 3px solid var(--ai); }
+.card.comparison { border-top: 3px solid var(--border-strong); }
+
+/* Section rhythm inside workspace pages */
+:is(.anomalies, .scaleup, .forecasting, .planning, .ai-analysis, .comparison) > h3,
+:is(.scaleup, .series, .adv-model) h3 { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+:is(.anomalies, .scaleup, .forecasting, .planning, .ai-analysis, .comparison) .card-header h3 { border-top: 0; padding-top: 0; }
+
+/* INVESTIGATE — anomaly findings: scan by severity; red only for SIGNIFICANT */
+.anomalies .anomaly-header { background: var(--surface-2); border-left: 4px solid var(--info); }
+.finding { transition: box-shadow 0.15s, background-color 0.15s; }
+.finding:hover { box-shadow: var(--shadow-sm); }
+.finding-info { border-left-color: var(--info); }
+.finding-attention { background: color-mix(in srgb, var(--warn) 5%, var(--surface)); }
+.finding-significant { background: color-mix(in srgb, var(--bad) 6%, var(--surface)); }
+.finding[open] { box-shadow: var(--shadow-sm); }
+.finding-body { background: var(--surface); border-radius: 0 0 var(--radius) 0; }
+.evidence-list li { margin: 2px 0; }
+
+/* Finding precedents: stored-run matches, observed vs derived */
+.precedents { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); }
+.prec-summary { color: var(--text); }
+.prec-table td:first-child strong { font-variant-numeric: tabular-nums; }
+
+/* AI analysis: AI INTERPRETATION language on interpretation cards */
+.ai-interpretation { border-left-color: var(--ai); background: color-mix(in srgb, var(--ai) 4%, var(--surface)); }
+.ai-overview { border-left: 3px solid var(--ai); padding-left: var(--space-3); }
+
+/* MODEL — scale-up: engineering source → factor → target flow */
+.scale-flow { gap: var(--space-2); }
+.flow-box { background: var(--surface); border-color: var(--border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-3) var(--space-4); }
+.flow-factor { border-color: var(--accent); background: var(--accent-soft); }
+.flow-value { font-size: 1.7rem; letter-spacing: -0.01em; }
+.flow-arrow { color: var(--accent); font-weight: 700; }
+.derived { background: var(--surface-2); border-radius: var(--radius); }
+.derived h4 { margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.scaleup-note { max-width: none; }
+
+/* Advanced modeling: an engineering workspace panel */
+.adv-model { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0 var(--space-4) var(--space-4); }
+.adv-formulas li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px 8px; font-variant-numeric: tabular-nums; }
+.adv-card { background: var(--surface); }
+
+/* Scale-up series: observed cross-scale comparison */
+.series { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0 var(--space-4) var(--space-4); margin-top: var(--space-5); }
+.series-side { background: var(--surface); }
+.series-relation { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); }
+
+/* Forecasting: observed vs MODEL FORECAST; scenario inputs */
+.forecasting .fc-banner { border-left-color: var(--series-b); }
+.forecasting > .fc-controls { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+.forecast-param { background: var(--surface); border-top: 3px solid color-mix(in srgb, var(--series-b) 55%, var(--border)); }
+.fc-assumptions { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); }
+.fc-whatif { background: color-mix(in srgb, var(--series-b) 4%, var(--surface)); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0 var(--space-4) var(--space-4); }
+
+/* PLAN — candidates, constraints, rationale */
+.planning .plan-constraints th, .planning .plan-constraints td { vertical-align: middle; }
+.plan-candidate { background: var(--surface); border-left: 3px solid var(--series-b); box-shadow: var(--shadow-sm); }
+.plan-rationale { background: var(--surface-2); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3) var(--space-2) 30px; }
+.plan-results > .grid, .plan-results .adv-cards { gap: var(--space-3); }
+
+/* Card grids used by Forecasting and Planning (`grid adv-cards` had no grid rule) */
+.grid.adv-cards { display: grid; gap: var(--space-3); }
+
+/* Comparison: two stored runs side by side */
+.compare-card { background: var(--surface-2); border-color: var(--border-strong); }
+
+/* Shared states */
+.ai-loading { background: var(--surface-2); }
+
+@media (max-width: 760px) {
+  .flow-value { font-size: 1.35rem; }
+  .adv-model, .series, .fc-whatif { padding: 0 var(--space-3) var(--space-3); }
+}
+@media (prefers-reduced-motion: reduce) { .finding { transition: none; } }
