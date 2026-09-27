@@ -27,6 +27,7 @@ const KEY_METRICS = [
 ]
 const TREND_PARAMETERS = new Set(['cell_density', 'dissolved_oxygen_percent', 'ph', 'temperature_c', 'agitation_rpm'])
 const MAX_FINDINGS = 5
+const CONTINUUM = ['Monitor', 'Understand', 'Compare', 'Scale', 'Forecast', 'Plan', 'Ask AI']
 const hours = (h) => (h == null ? 'Not available' : `${Number(h.toFixed(2))} h`)
 const num = (v, d = 3) => (v == null ? 'Not available' : v.toLocaleString('en-US', { maximumFractionDigits: d }))
 
@@ -150,6 +151,14 @@ export default function CommandCenter({
       <div className="card-header">
         <h2>Bioprocess Command Center</h2>
       </div>
+      {/* Presentation only: the investigation path this overview starts (no navigation, no actions). */}
+      <ol className="cc-continuum" aria-label="Investigation path">
+        {CONTINUUM.map((step, i) => (
+          <li key={step} aria-current={i === 0 ? 'step' : undefined}>
+            {step}
+          </li>
+        ))}
+      </ol>
       <p className="muted disclaimer">
         One view of an experiment, assembled from the application's existing analysis, anomaly checks, scale-up
         scenario, simulator and AI results. It adds no new calculations or scores.
