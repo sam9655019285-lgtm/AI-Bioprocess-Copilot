@@ -968,3 +968,59 @@ td.num { font-variant-numeric: tabular-nums; }
   .adv-model, .series, .fc-whatif { padding: 0 var(--space-3) var(--space-3); }
 }
 @media (prefers-reduced-motion: reduce) { .finding { transition: none; } }
+
+/* =====================================================================================
+   UI/UX Phase 6 — AI experience (presentation only; no request, prompt or behaviour changes)
+   AI text wears violet; evidence stays neutral; uncertainty is calm amber; severity keeps its colours.
+   ===================================================================================== */
+
+/* Shared AI page header cue */
+.card.copilot { border-top: 3px solid var(--ai); }
+.copilot-notice, .ai-notice { border-left-color: var(--ai); color: var(--text-2); background: color-mix(in srgb, var(--ai) 5%, var(--surface)); }
+
+/* Not configured: a calm configuration card, not an error */
+.ai-not-configured { color: var(--text-2); background: var(--surface-2); border-color: var(--border); border-left: 4px solid var(--ai); }
+.ai-not-configured code { color: var(--text); }
+
+/* Loading: restrained skeleton lines under the existing spinner text */
+.ai-loading { position: relative; flex-wrap: wrap; border-style: solid; border-left: 3px solid var(--ai); }
+.ai-loading::after { content: ''; flex-basis: 100%; height: 34px; border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--border) 0 60%, transparent 60% 64%, var(--border) 64% 90%, transparent 90%) top / 100% 9px no-repeat,
+              linear-gradient(90deg, var(--border) 0 80%, transparent 80%) bottom / 100% 9px no-repeat;
+  opacity: 0.7; animation: ui-skeleton 1.4s ease-in-out infinite; }
+@keyframes ui-skeleton { 50% { opacity: 0.35; } }
+
+/* AI Process Analysis: trust line, AI cards, evidence vs uncertainty */
+.ai-trust { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 var(--space-2); font-size: 0.86rem; color: var(--text-2); }
+.ai-trust .cat-badge { margin-top: 0; }
+.ai-result { border-left: 3px solid var(--ai); padding-left: var(--space-4); }
+.ai-section h3 { padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.ai-overview { background: color-mix(in srgb, var(--ai) 5%, var(--surface)); border-radius: 0 var(--radius) var(--radius) 0; padding: var(--space-3) var(--space-4); line-height: 1.6; max-width: 96ch; }
+.ai-card, .ai-fact, .ai-interpretation { border-left-color: var(--ai); background: color-mix(in srgb, var(--ai) 3%, var(--surface)); }
+.ai-attention { border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 5%, var(--surface)); }
+.ai-field { margin-top: 6px; line-height: 1.5; }
+.ai-field-evidence { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 8px; }
+.ai-field-uncertainty { background: color-mix(in srgb, var(--warn) 7%, var(--surface)); border-left: 3px solid color-mix(in srgb, var(--warn) 60%, var(--border)); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 6px 8px; }
+
+/* AI Copilot: question strip, input panel, structured answer */
+.copilot-input { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); }
+.copilot-input textarea { width: 100%; }
+.copilot-input:focus-within { border-color: var(--ai); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ai) 18%, transparent); }
+.quick-questions { gap: 6px; }
+.chip-question:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+.copilot-reply { box-shadow: var(--shadow-sm); padding: var(--space-4) var(--space-5); }
+.copilot-question { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 0; }
+.copilot-section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; }
+.copilot-section-head h4 { margin-bottom: 4px; }
+.copilot-section-head .cat-badge { margin-top: 0; }
+.copilot-section-note { font-size: 0.75rem; font-weight: 400; }
+.copilot-section-answer .copilot-answer { font-size: 0.98rem; line-height: 1.65; max-width: 96ch; white-space: pre-line; }
+.copilot-section-evidence { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-2) var(--space-3); }
+.copilot-section-uncertainty { background: color-mix(in srgb, var(--warn) 6%, var(--surface)); border-left: 3px solid color-mix(in srgb, var(--warn) 60%, var(--border)); border-radius: 0 var(--radius) var(--radius) 0; padding: var(--space-2) var(--space-3); }
+.copilot-section-followups .chip-question { background: var(--surface); }
+
+@media (max-width: 760px) {
+  .ai-result { padding-left: var(--space-3); }
+  .copilot-reply { padding: var(--space-3); }
+}
+@media (prefers-reduced-motion: reduce) { .ai-loading::after { animation: none; } }

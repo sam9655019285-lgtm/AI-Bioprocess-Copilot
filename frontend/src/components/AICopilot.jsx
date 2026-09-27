@@ -56,10 +56,13 @@ function ContextSummary({ analysis, anomalies }) {
   )
 }
 
-function ListSection({ title, items, empty }) {
+function ListSection({ title, items, empty, className = '', note }) {
   return (
-    <section className="copilot-section">
-      <h4>{title}</h4>
+    <section className={`copilot-section ${className}`}>
+      <div className="copilot-section-head">
+        <h4>{title}</h4>
+        {note && <span className="muted copilot-section-note">{note}</span>}
+      </div>
       {items.length === 0 ? (
         <p className="muted">{empty}</p>
       ) : (
@@ -257,13 +260,16 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, foreca
           <p className="copilot-question">
             <span className="muted">Question about {reply.experiment_id}:</span> {reply.question}
           </p>
-          <section className="copilot-section">
-            <h4>Answer</h4>
+          <section className="copilot-section copilot-section-answer">
+            <div className="copilot-section-head">
+              <h4>Answer</h4>
+              <span className="cat-badge cat-ai">AI INTERPRETATION</span>
+            </div>
             <p className="copilot-answer">{reply.answer}</p>
           </section>
-          <ListSection title="Evidence from the experiment data" items={reply.evidence} empty="No specific evidence cited." />
-          <ListSection title="Uncertainties" items={reply.uncertainties} empty="None stated." />
-          <section className="copilot-section">
+          <ListSection title="Evidence from the experiment data" items={reply.evidence} empty="No specific evidence cited." className="copilot-section-evidence" note="cited by the AI from the supplied experiment context" />
+          <ListSection title="Uncertainties" items={reply.uncertainties} empty="None stated." className="copilot-section-uncertainty" />
+          <section className="copilot-section copilot-section-followups">
             <h4>Suggested follow-up questions</h4>
             {reply.suggested_questions.length === 0 ? (
               <p className="muted">None suggested.</p>

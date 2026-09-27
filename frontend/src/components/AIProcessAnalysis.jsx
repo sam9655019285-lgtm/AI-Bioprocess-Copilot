@@ -15,9 +15,9 @@ function Section({ title, items, empty = 'None reported.', children }) {
   )
 }
 
-function Field({ label, children }) {
+function Field({ label, kind, children }) {
   return (
-    <div className="ai-field">
+    <div className={`ai-field${kind ? ` ai-field-${kind}` : ''}`}>
       <span className="ai-field-label">{label}</span>
       <span>{children}</span>
     </div>
@@ -28,6 +28,10 @@ function AIResult({ result }) {
   const a = result.analysis
   return (
     <div className="ai-result">
+      <p className="ai-trust">
+        <span className="cat-badge cat-ai">AI INTERPRETATION</span> Every section below is Gemini&apos;s interpretation of the
+        application&apos;s deterministic results; evidence lines refer to that supplied data.
+      </p>
       <p className="muted small-note">
         {result.provider} · {result.model} · {new Date(result.generated_at).toLocaleString()} · based on{' '}
         {result.observation_count} observation(s) and {result.finding_count} deterministic finding(s)
@@ -44,7 +48,7 @@ function AIResult({ result }) {
             <article key={i} className="ai-card ai-fact">
               <h4>{p.title}</h4>
               <Field label="Observation">{p.observation}</Field>
-              <Field label="Evidence">{p.evidence}</Field>
+              <Field label="Evidence" kind="evidence">{p.evidence}</Field>
             </article>
           ))}
         </div>
@@ -56,8 +60,8 @@ function AIResult({ result }) {
             <article key={i} className="ai-card ai-interpretation">
               <h4>{p.title}</h4>
               <Field label="Interpretation">{p.interpretation}</Field>
-              <Field label="Supporting evidence">{p.supporting_evidence}</Field>
-              <Field label="Uncertainty">{p.uncertainty}</Field>
+              <Field label="Supporting evidence" kind="evidence">{p.supporting_evidence}</Field>
+              <Field label="Uncertainty" kind="uncertainty">{p.uncertainty}</Field>
             </article>
           ))}
         </div>
@@ -84,7 +88,7 @@ function AIResult({ result }) {
               <article key={i} className="ai-card">
                 <h4>{p.title}</h4>
                 <Field label="Consideration">{p.consideration}</Field>
-                <Field label="Basis">{p.basis}</Field>
+                <Field label="Basis" kind="evidence">{p.basis}</Field>
               </article>
             ))}
           </div>
