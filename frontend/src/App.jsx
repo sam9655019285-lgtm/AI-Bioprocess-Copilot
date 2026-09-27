@@ -16,21 +16,21 @@ import ScaleUpSimulator from './components/ScaleUpSimulator.jsx'
 import SimulatedBioreactor from './components/SimulatedBioreactor.jsx'
 import { useSimulator } from './useSimulator.js'
 
-// `group` and `purpose` are presentation only (UI/UX Phase 2): navigation groups follow the existing tab order.
+// `group`, `purpose` and `stage` are presentation only (UI/UX Phases 2 and 9; `stage` = step in the demo investigation story): navigation groups follow the existing tab order.
 const PAGES = [
-  { id: 'command-center', label: 'Command Center', Component: CommandCenter, group: 'Operate', purpose: 'Operational overview of the selected experiment or live simulated run.' },
+  { id: 'command-center', stage: '1 · Monitor', label: 'Command Center', Component: CommandCenter, group: 'Operate', purpose: 'Operational overview of the selected experiment or live simulated run.' },
   { id: 'experiment-data', label: 'Experiment Data', Component: ExperimentData, group: 'Operate', purpose: 'Create experiments and record observations manually or from CSV.' },
-  { id: 'simulator', label: 'Simulated Bioreactor', Component: SimulatedBioreactor, group: 'Operate', purpose: 'Run the software simulator, inject simulated disturbances and review live alerts.' },
-  { id: 'bioreactor', label: 'Bioreactor', Component: BioreactorVisualization, group: 'Operate', purpose: 'Illustrative view of the simulated bioreactor state.' },
-  { id: 'monitoring', label: 'Process Monitoring', Component: ProcessMonitoring, group: 'Operate', purpose: 'Track process variables across the culture timeline.' },
-  { id: 'anomalies', label: 'Anomalies', Component: AnomalyDetection, group: 'Investigate', purpose: 'Review rule-based process findings, their evidence and precedents in stored runs.' },
-  { id: 'forecasting', label: 'Forecasting', Component: ProcessForecasting, group: 'Model & Plan', purpose: 'Explore model-based estimates from historical observations.' },
-  { id: 'planning', label: 'Experiment Planning', Component: ExperimentPlanning, group: 'Model & Plan', purpose: 'Explore candidate conditions based on existing observations and allowed ranges.' },
-  { id: 'scaleup', label: 'Scale-Up', Component: ScaleUpSimulator, group: 'Model & Plan', purpose: 'Evaluate deterministic scale relationships, engineering assumptions and stored scale-up series.' },
-  { id: 'ai', label: 'AI Analysis', Component: AIProcessAnalysis, group: 'AI & Output', purpose: 'Gemini interpretation of the deterministic analysis, generated only on request.' },
-  { id: 'copilot', label: 'AI Copilot', Component: AICopilot, group: 'AI & Output', purpose: 'Ask questions about the selected experiment and its available evidence.' },
-  { id: 'comparison', label: 'Experiment Comparison', Component: ExperimentComparison, group: 'AI & Output', purpose: 'Compare two stored experiments side by side.' },
-  { id: 'report', label: 'Report', Component: ReportGeneration, group: 'AI & Output', purpose: 'Generate a PDF report from existing results.' },
+  { id: 'simulator', stage: '1 · Monitor', label: 'Simulated Bioreactor', Component: SimulatedBioreactor, group: 'Operate', purpose: 'Run the software simulator, inject simulated disturbances and review live alerts.' },
+  { id: 'bioreactor', stage: '1 · Monitor', label: 'Bioreactor', Component: BioreactorVisualization, group: 'Operate', purpose: 'Illustrative view of the simulated bioreactor state.' },
+  { id: 'monitoring', stage: '1 · Monitor', label: 'Process Monitoring', Component: ProcessMonitoring, group: 'Operate', purpose: 'Track process variables across the culture timeline.' },
+  { id: 'anomalies', stage: '2 · Investigate', label: 'Anomalies', Component: AnomalyDetection, group: 'Investigate', purpose: 'Review rule-based process findings, their evidence and precedents in stored runs.' },
+  { id: 'forecasting', stage: '5 · Forecast', label: 'Forecasting', Component: ProcessForecasting, group: 'Model & Plan', purpose: 'Explore model-based estimates from historical observations.' },
+  { id: 'planning', stage: '6 · Plan', label: 'Experiment Planning', Component: ExperimentPlanning, group: 'Model & Plan', purpose: 'Explore candidate conditions based on existing observations and allowed ranges.' },
+  { id: 'scaleup', stage: '4 · Scale', label: 'Scale-Up', Component: ScaleUpSimulator, group: 'Model & Plan', purpose: 'Evaluate deterministic scale relationships, engineering assumptions and stored scale-up series.' },
+  { id: 'ai', stage: '7 · Ask AI', label: 'AI Analysis', Component: AIProcessAnalysis, group: 'AI & Output', purpose: 'Gemini interpretation of the deterministic analysis, generated only on request.' },
+  { id: 'copilot', stage: '7 · Ask AI', label: 'AI Copilot', Component: AICopilot, group: 'AI & Output', purpose: 'Ask questions about the selected experiment and its available evidence.' },
+  { id: 'comparison', stage: '3 · Compare', label: 'Experiment Comparison', Component: ExperimentComparison, group: 'AI & Output', purpose: 'Compare two stored experiments side by side.' },
+  { id: 'report', stage: '8 · Report', label: 'Report', Component: ReportGeneration, group: 'AI & Output', purpose: 'Generate a PDF report from existing results.' },
   { id: 'history', label: 'Experiment History', Component: ExperimentHistory, group: 'Records', purpose: 'Browse, open and delete stored experiments.' },
   { id: 'status', label: 'Backend Status', Component: BackendStatus, group: 'Records', purpose: 'Backend connection and AI configuration status.' },
 ]
@@ -105,7 +105,7 @@ export default function App() {
         </nav>
       </header>
       {current && (
-        <p className="page-context" aria-live="polite">
+        <p className="page-context" aria-live="polite" data-stage={current.stage}>
           <span className="page-context-group">{current.group}</span>
           <span className="page-context-sep" aria-hidden="true">
             ›

@@ -44,16 +44,16 @@ function Panel({ title, action, children, className = '' }) {
 
 // SIMULATED DEMO WORKFLOW (Phase 19A): navigation only; every action stays on its own page.
 const DEMO_STEPS = [
-  { page: 'simulator', label: 'Simulated Bioreactor', hint: 'Save to DEMO-LIVE and press START.' },
-  { page: 'simulator', label: 'Inject simulated disturbance', hint: 'Choose DO −35 % air sat. and press Inject disturbance.' },
-  { page: 'simulator', label: 'Inspect alert', hint: 'Open the alert and its evidence in Live alerts.' },
-  { page: 'simulator', label: 'Find precedents', hint: 'In the alert detail: the same rule in stored runs.' },
-  { page: 'comparison', label: 'Compare runs', hint: 'Or use "Compare with this run" from a precedent.' },
-  { page: 'scaleup', label: 'Scale-Up', hint: 'Engineering estimates with labelled assumptions.' },
-  { page: 'forecasting', label: 'Forecasting', hint: 'Illustrative model forecast.' },
-  { page: 'planning', label: 'Experiment Planning', hint: 'Candidate conditions within allowed ranges.' },
-  { page: 'copilot', label: 'AI Copilot', hint: 'Gemini runs only when you ask.' },
-  { page: 'report', label: 'Report', hint: 'Download the PDF.' },
+  { stage: 'Monitor', page: 'simulator', label: 'Simulated Bioreactor', hint: 'Save to DEMO-LIVE and press START.' },
+  { stage: 'Monitor', page: 'simulator', label: 'Inject simulated disturbance', hint: 'Choose DO −35 % air sat. and press Inject disturbance.' },
+  { stage: 'Alert', page: 'simulator', label: 'Inspect alert', hint: 'Open the alert and its evidence in Live alerts.' },
+  { stage: 'Precedent', page: 'simulator', label: 'Find precedents', hint: 'In the alert detail: the same rule in stored runs.' },
+  { stage: 'Compare', page: 'comparison', label: 'Compare runs', hint: 'Or use "Compare with this run" from a precedent.' },
+  { stage: 'Scale', page: 'scaleup', label: 'Scale-Up', hint: 'Engineering estimates with labelled assumptions.' },
+  { stage: 'Forecast', page: 'forecasting', label: 'Forecasting', hint: 'Illustrative model forecast.' },
+  { stage: 'Plan', page: 'planning', label: 'Experiment Planning', hint: 'Candidate conditions within allowed ranges.' },
+  { stage: 'Ask AI', page: 'copilot', label: 'AI Copilot', hint: 'Gemini runs only when you ask.' },
+  { stage: 'Report', page: 'report', label: 'Report', hint: 'Download the PDF.' },
 ]
 
 function DemoWorkflow({ sim, onNavigate }) {
@@ -70,7 +70,7 @@ function DemoWorkflow({ sim, onNavigate }) {
       </p>
       <ol className="cc-demo-steps">
         {DEMO_STEPS.map((s) => (
-          <li key={s.label}>
+          <li key={s.label} data-stage={s.stage}>
             <button type="button" className="link-button" onClick={() => onNavigate?.(s.page)}>
               {s.label}
             </button>
@@ -82,9 +82,9 @@ function DemoWorkflow({ sim, onNavigate }) {
   )
 }
 
-function LinkButton({ onClick, children }) {
+function LinkButton({ onClick, children, primary = false }) {
   return (
-    <button type="button" className="secondary small" onClick={onClick}>
+    <button type="button" className={primary ? 'small cc-continue' : 'secondary small'} onClick={onClick}>
       {children}
     </button>
   )
@@ -216,7 +216,7 @@ export default function CommandCenter({
           </div>
 
           <div className="cc-grid">
-            <Panel className="cc-primary cc-vessel-panel" title="Live bioreactor" action={<LinkButton onClick={() => go('bioreactor')}>Open Full Bioreactor View</LinkButton>}>
+            <Panel className="cc-primary cc-vessel-panel" title="Live bioreactor" action={<LinkButton primary onClick={() => go('bioreactor')}>Open Full Bioreactor View</LinkButton>}>
               {active && (
                 <div className="cc-vessel">
                   <BioreactorVessel

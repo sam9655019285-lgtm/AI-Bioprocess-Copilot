@@ -1079,3 +1079,56 @@ button.danger.small:hover:not(:disabled) { background: color-mix(in srgb, var(--
   /* keep "Not available" compact after the mobile metric-value size rules */
   .cc-metrics .metric-value-missing, .metric-value-missing { font-size: 1rem; }
 }
+
+/* UI/UX Phase 9 — demo & presentation polish (presentation only; stage text lives in data-stage, not innerText) */
+/* Investigation-story stage marker in the page context line */
+.page-context[data-stage]::before {
+  content: "Step " attr(data-stage); order: 9; margin-left: auto;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; color: var(--accent);
+  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px; padding: 2px 10px; white-space: nowrap;
+}
+@media (max-width: 600px) { .page-context[data-stage]::before { margin-left: 0; } }
+/* Active tab: stronger for projector / screen share */
+.tab.tab-active { box-shadow: inset 0 -2px 0 var(--accent); }
+
+/* Command Center: overview → live process view continuation */
+button.cc-continue { background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+button.cc-continue::after { content: " →"; }
+.command-center .cc-panel-head h3 { letter-spacing: 0.01em; }
+.command-center .metric-value, .cc-metrics .metric-value { font-variant-numeric: tabular-nums; }
+
+/* Demo workflow: numbered investigation path with stage tags */
+.cc-demo { border-left-color: var(--accent); }
+.cc-demo[open] { padding-bottom: var(--space-3); }
+.cc-demo summary { font-weight: 650; }
+.cc-demo summary .small-note { font-weight: 400; }
+.cc-demo-steps {
+  counter-reset: demo-step; list-style: none; padding-left: 0; margin-top: var(--space-3);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: var(--space-2);
+}
+.cc-demo-steps li {
+  counter-increment: demo-step; position: relative; margin: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3) var(--space-2) 44px; line-height: 1.35;
+}
+.cc-demo-steps li::before {
+  content: counter(demo-step); position: absolute; left: 10px; top: 10px;
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 0.78rem; font-weight: 700; color: var(--on-accent); background: var(--accent);
+}
+.cc-demo-steps li::after {
+  content: attr(data-stage); position: absolute; right: 8px; top: 8px;
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; color: var(--muted);
+}
+.cc-demo-steps li[data-stage="Ask AI"]::before { background: var(--ai); }
+.cc-demo-steps li[data-stage="Alert"]::before { background: var(--warn); }
+.cc-demo-steps .link-button { font-weight: 650; text-decoration: none; text-align: left; padding-right: 52px; }
+.cc-demo-steps .link-button:hover { text-decoration: underline; }
+.cc-demo-steps li .small-note { display: block; margin-top: 2px; }
+
+/* Alert → evidence: parameter/time easy to scan */
+.live-alert-row { font-variant-numeric: tabular-nums; }
+
+/* Report page: final record framing */
+.report-page .report-option-scenario { border-left-color: var(--series-b); }
