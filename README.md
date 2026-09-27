@@ -539,6 +539,16 @@ Open http://localhost:5173 — the "Backend status" card should show **ONLINE**.
 
 Production build: `npm run build` (output in `frontend/dist/`).
 
+## Starting the project with start_project.bat
+
+On Windows, after the one-time backend and frontend installs above, double-click `start_project.bat` in the project root (or run it from CMD). It:
+
+- starts the backend (`.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000 --env-file .env`) in an "AI Copilot Backend" window, or reuses one that already answers `/api/health`;
+- starts Vite (`npm run dev -- --host 127.0.0.1 --port <port> --strictPort`) in an "AI Copilot Frontend" window, on 5173 or the first free port up to 5180, or reuses this app's frontend if it is already running;
+- waits until both respond (up to about 60 s each), then opens the actual frontend URL.
+
+If port 8000 is held by another program, or a service does not start, it prints an error and names the window to inspect. To stop the project, close the two windows; the launcher never kills processes.
+
 ## Legacy prototype
 
 `app.py` and the root `requirements.txt` are an earlier Streamlit prototype, kept for reference. They are not part of the React/FastAPI app. Run with `pip install -r requirements.txt && streamlit run app.py`.
