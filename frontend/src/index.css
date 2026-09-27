@@ -56,7 +56,7 @@
     --warn-bg: #2d220d;
     --bad-bg: #2d1414;
     --series: #0fa899;
-    --series-b: #e8590c;
+    --series-b: #f2762f;
     --surface-2: #1c2530;
     --text-2: #c3ccd6;
     --border-strong: #36434f;
@@ -676,9 +676,7 @@ td.num { font-variant-numeric: tabular-nums; }
 /* Scientific trust labels: one badge language, distinct but restrained */
 .cat-badge, .treat-badge, .src-badge, .source-badge { border-radius: 4px; }
 .cat-badge { background: color-mix(in srgb, currentColor 9%, transparent); }
-.cat-observed { color: var(--accent); }
 .cat-derived { color: var(--text-2); }
-.cat-assumption { color: var(--warn); }
 .cat-forecast, .cat-scenario, .cat-candidate { color: var(--series-b); }
 .cat-user { color: var(--info); }
 .cat-ai { color: var(--ai); }
@@ -1035,7 +1033,6 @@ td.num { font-variant-numeric: tabular-nums; }
 
 /* Experiment History: a registry — identity strongest, metadata quieter, actions tidy */
 .history-table td:first-child { font-weight: 650; color: var(--text); overflow-wrap: anywhere; white-space: normal; min-width: 140px; }
-.history-table td { vertical-align: middle; }
 .history-table tbody tr[aria-selected='true'] td, .history-table tbody tr.selected td { background: var(--accent-soft); }
 .row-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 button.danger.small { background: transparent; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 55%, var(--border)); }
@@ -1050,7 +1047,6 @@ button.danger.small:hover:not(:disabled) { background: color-mix(in srgb, var(--
 .scale-compare { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); font-variant-numeric: tabular-nums; }
 .compare-notice { border-left-width: 5px; font-weight: 500; }
 .compare-table td.num { font-variant-numeric: tabular-nums; }
-.diff-note { font-size: 0.8rem; }
 .compare-anomalies { background: var(--surface-2); }
 .compare-chart { margin-top: var(--space-3); }
 
@@ -1068,4 +1064,18 @@ button.danger.small:hover:not(:disabled) { background: color-mix(in srgb, var(--
 @media (max-width: 760px) {
   .report-sections { columns: 1; }
   .row-actions { justify-content: flex-start; }
+}
+
+/* =====================================================================================
+   UI/UX Phase 8 — responsive, accessibility & final polish
+   ===================================================================================== */
+
+/* Comfortable touch targets on tablet/phone widths (desktop density unchanged) */
+@media (max-width: 760px) {
+  button.small { min-height: 36px; }
+  .report-inline .chip { min-height: 34px; }
+  .cc-demo-steps .link-button { display: inline-block; min-height: 32px; padding: 6px 0; }
+  .tab { min-height: 36px; }
+  /* keep "Not available" compact after the mobile metric-value size rules */
+  .cc-metrics .metric-value-missing, .metric-value-missing { font-size: 1rem; }
 }
