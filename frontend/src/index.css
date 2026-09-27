@@ -1024,3 +1024,48 @@ td.num { font-variant-numeric: tabular-nums; }
   .copilot-reply { padding: var(--space-3); }
 }
 @media (prefers-reduced-motion: reduce) { .ai-loading::after { animation: none; } }
+
+/* =====================================================================================
+   UI/UX Phase 7 — Records, comparison & reporting (presentation only; no data or request changes)
+   ===================================================================================== */
+
+/* One records family: History → Comparison → Report share a neutral top edge; the report is the most formal */
+.card.history { border-top: 3px solid var(--border-strong); }
+.card.report-page { border-top: 3px double var(--text-2); }
+
+/* Experiment History: a registry — identity strongest, metadata quieter, actions tidy */
+.history-table td:first-child { font-weight: 650; color: var(--text); overflow-wrap: anywhere; white-space: normal; min-width: 140px; }
+.history-table td { vertical-align: middle; }
+.history-table tbody tr[aria-selected='true'] td, .history-table tbody tr.selected td { background: var(--accent-soft); }
+.row-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+button.danger.small { background: transparent; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 55%, var(--border)); }
+button.danger.small:hover:not(:disabled) { background: color-mix(in srgb, var(--bad) 10%, var(--surface)); filter: none; }
+.history-detail { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); margin-top: var(--space-4); }
+.table-scroll { max-width: 100%; overflow-x: auto; }
+
+/* Experiment Comparison: symmetrical A ↔ B, observed values neutral, differences derived, no winner */
+.compare-pickers .picker { border-color: var(--border-strong); }
+.compare-cards { position: relative; }
+.compare-card { border-top: 3px solid var(--border-strong); }
+.scale-compare { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); font-variant-numeric: tabular-nums; }
+.compare-notice { border-left-width: 5px; font-weight: 500; }
+.compare-table td.num { font-variant-numeric: tabular-nums; }
+.diff-note { font-size: 0.8rem; }
+.compare-anomalies { background: var(--surface-2); }
+.compare-chart { margin-top: var(--space-3); }
+
+/* Report Generation: document outline and provenance of optional sections */
+.report-preview { border-left: 4px solid var(--text-2); }
+.report-sections { columns: 2; column-gap: var(--space-6); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4) var(--space-3) 38px; margin: var(--space-3) 0; }
+.report-sections li { padding: 3px 0; break-inside: avoid; font-variant-numeric: tabular-nums; }
+.report-options { gap: var(--space-3); }
+.report-option { background: var(--surface); border-left: 3px solid var(--border-strong); }
+.report-option-scenario { border-left-color: var(--warn); }
+.report-option-ai { border-left-color: var(--ai); }
+.report-success { border-left-width: 5px; font-weight: 500; }
+.report-page .report-options + .actions { margin-top: var(--space-4); }
+
+@media (max-width: 760px) {
+  .report-sections { columns: 1; }
+  .row-actions { justify-content: flex-start; }
+}

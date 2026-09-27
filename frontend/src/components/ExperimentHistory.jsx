@@ -135,7 +135,7 @@ export default function ExperimentHistory({ active, dataVersion, onDataChanged, 
   }
 
   return (
-    <section className="card">
+    <section className="card history">
       <div className="card-header">
         <h2>Experiment History</h2>
         <button className="secondary small" onClick={() => setRefreshCount((n) => n + 1)}>

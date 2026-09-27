@@ -173,7 +173,7 @@ export default function ReportGeneration({ active, dataVersion, aiAnalyses = {},
 
           <h3>Optional sections</h3>
           <div className="report-options">
-            <div className="report-option">
+            <div className="report-option report-option-scenario">
               <label className="ai-checkbox">
                 <input type="checkbox" checked={includeScaleUp} onChange={(e) => setIncludeScaleUp(e.target.checked)} />
                 Scale-Up Scenario
@@ -195,7 +195,7 @@ export default function ReportGeneration({ active, dataVersion, aiAnalyses = {},
                 </span>
               )}
             </div>
-            <div className="report-option">
+            <div className="report-option report-option-ai">
               <label className="ai-checkbox">
                 <input type="checkbox" checked={Boolean(ai) && includeAI} disabled={!ai} onChange={(e) => setIncludeAI(e.target.checked)} />
                 AI Analysis
@@ -206,7 +206,7 @@ export default function ReportGeneration({ active, dataVersion, aiAnalyses = {},
                   : 'Not available: no AI Process Analysis for this experiment in this session (optional; see the AI Analysis tab).'}
               </span>
             </div>
-            <div className="report-option">
+            <div className="report-option report-option-ai">
               <label className="ai-checkbox">
                 <input type="checkbox" checked={Boolean(copilot) && includeCopilot} disabled={!copilot} onChange={(e) => setIncludeCopilot(e.target.checked)} />
                 AI Copilot
