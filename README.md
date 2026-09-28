@@ -4,6 +4,110 @@ A hackathon prototype of a **decision-support copilot** for bioprocess engineers
 
 > This software does **not** control a physical bioreactor. It analyses data you provide (simulated data first; CSV, manual and optional live data later).
 
+## Quick start
+
+**You need:** Python **3.12+** (the code uses 3.12 generic syntax; developed on 3.14) and Node.js **20+** with npm (developed on Node 24 / npm 11). Windows PowerShell commands shown; on macOS/Linux use `.venv/bin/python` instead of `.venv\Scripts\python`.
+
+**1. Backend** (first terminal):
+
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python -m uvicorn app.main:app --reload --port 8000 --env-file .env
+```
+
+Drop `--env-file .env` if you have not created `backend/.env` (the app runs; only the Gemini features report "not configured").
+
+**2. Frontend** (second terminal):
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** (Vite prints the actual URL; if 5173 is busy it picks the next free port). The Vite dev server proxies `/api` to the backend on port 8000.
+
+**3. Check it:** http://127.0.0.1:8000/api/health → `{"status":"ok",…}` · http://127.0.0.1:8000/api/ai/status → `{"configured":true|false}` (never shows the key) · API docs: http://127.0.0.1:8000/docs
+
+**4. Stop:** press `Ctrl+C` in each terminal.
+
+### Gemini (optional, backend only)
+
+Copy `backend/.env.example` to `backend/.env` and put your key in it:
+
+```
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+The key is read only by the backend (`gemini_service.py`), never sent to the browser, never logged and never returned in errors. `.env` files are git-ignored — never commit them. (`.env.example` is also matched by the `.env.*` ignore rule; add it with `git add -f backend/.env.example` if you want it tracked.) Without a key, every deterministic feature works; AI Analysis / Copilot / AI interpretations show a clear "Gemini is not configured" message.
+
+### Demo data and reset
+
+```powershell
+cd backend
+.venv\Scripts\python -m app.demo_seed --replace
+```
+
+Rebuilds exactly the four **SIMULATED DEMO DATA** experiments — `DEMO-1L-BASELINE`, `DEMO-10L-SCALEUP`, `DEMO-1L-DO-EVENT` (simulated DO disturbance at 24 h → 2 significant findings) and the empty live target `DEMO-LIVE` — with fixed simulator seeds. Nothing else is touched and the app never seeds by itself. Run it before each rehearsal. It is simulated data, never laboratory measurements.
+
+### Demo story (3–5 minutes)
+
+The Command Center's **SIMULATED DEMO WORKFLOW** card lists the 10 stages; each page's **Next ·** button continues the story:
+
+1. **Monitor** — Simulated Bioreactor: save to `DEMO-LIVE`, press START, inject the DO −35 % simulated disturbance.
+2. **Investigate** — the live alert appears (Live alerts).
+3. **Evidence** — Anomalies: select `DEMO-1L-DO-EVENT`; each finding shows its evidence.
+4. **Precedent** — **Find precedents** on a finding (same rule in stored runs).
+5. **Compare** — **Compare with this run** (or Experiment Comparison).
+6. **Scale** — Scale-Up: scenario, engineering estimates, stored scale-up series.
+7. **Forecast** — Forecasting: illustrative model forecast (observed vs. model forecast).
+8. **Plan** — Experiment Planning: candidate conditions within allowed ranges.
+9. **Ask AI** — AI Copilot: ask a question; the answer cites application evidence IDs (`F-001`, `P-002` …) that can be expanded.
+10. **Report** — Report: **Generate PDF report**.
+
+Gemini is called only when you press **Analyze with Gemini**, **Send**, **Interpret/Explain** — never on page open, navigation or evidence expansion.
+
+### Backup path (no Gemini, no internet, or no live simulation)
+
+Everything except the AI steps is deterministic and local: Command Center → select `DEMO-1L-DO-EVENT` → Process Monitoring → **Investigate Findings** (Anomalies, evidence) → **Find precedents** → Comparison (`DEMO-1L-BASELINE` vs `DEMO-10L-SCALEUP`) → Scale-Up → Forecasting → Planning → Report (the PDF generates without Gemini; AI sections are simply left out). The app never shows invented AI answers as a fallback. (Web fonts fall back to system fonts offline.)
+
+### Troubleshooting
+
+| Symptom | What to do |
+|---|---|
+| Frontend shows backend **OFFLINE** / API errors | Start the backend on port 8000; check `/api/health`. |
+| `address already in use` on 8000 | Another backend is still running — close that terminal (or stop that process) and start again. |
+| Vite opens on 5174+ | 5173 is busy; use the URL Vite prints (the `/api` proxy still works). |
+| "Gemini is not configured" | Create `backend/.env` with `GEMINI_API_KEY=…` and restart the backend **with** `--env-file .env`. |
+| Gemini **400 INVALID_ARGUMENT** / **403** | The key is wrong or not allowed for the model — check the key. |
+| Gemini **429** | Quota reached (the free tier has a daily per-model limit) — use the backup path. |
+| Gemini **503** | Provider overloaded — retry shortly or use the backup path. |
+| No demo experiments | Run the demo seed command above. |
+
+### Hackathon Demo Checklist
+
+- [ ] Start backend
+- [ ] Start frontend
+- [ ] Check `/api/health`
+- [ ] Configure Gemini if available (`/api/ai/status` → `configured: true`)
+- [ ] Seed demo data (`python -m app.demo_seed --replace`)
+- [ ] Open Command Center
+- [ ] Run Monitor stage
+- [ ] Show finding
+- [ ] Inspect evidence
+- [ ] Show precedent
+- [ ] Compare runs
+- [ ] Explore scale-up
+- [ ] Forecast
+- [ ] Plan
+- [ ] Ask Copilot
+- [ ] Generate PDF
+- [ ] Keep backup offline path ready
+
+> **Scientific disclaimer.** This is a decision-support prototype. Demo data is simulated; monitoring thresholds are prototype defaults; scale-up, forecast and planning outputs are illustrative calculations and model estimates, not validated biological or industrial predictions; AI output is interpretation that must be reviewed. The software controls no equipment — the scientist remains the decision-maker.
+
 ## Architecture
 
 ```
@@ -366,7 +470,7 @@ It writes to the configured database (`BIOPROCESS_DB_URL`, default `backend/data
 
 Every description starts with `SIMULATED DEMO DATA — generated by the software simulator (seed N); not laboratory measurements.` Without `--replace`, existing demo experiments are left unchanged (and a `DEMO-LIVE` that already holds a live run is reported, not deleted). `--replace` deletes and recreates only those four IDs, and only when the experiment is SIMULATED and carries the marker; if any of the IDs belongs to other data, the command refuses and changes nothing. There is no "delete all".
 
-**Guided workflow.** The app opens on the **Command Center**, which has a collapsible **SIMULATED DEMO WORKFLOW** card: Simulated Bioreactor → inject simulated disturbance → inspect alert → find precedents → compare runs → Scale-Up → Forecasting → Experiment Planning → AI Copilot → Report. Its buttons only navigate; starting the simulator, injecting a disturbance and asking Gemini remain explicit actions on those pages. No experiment is selected automatically (each page keeps its own selection).
+**Guided workflow.** The app opens on the **Command Center**, which has a collapsible **SIMULATED DEMO WORKFLOW** card with 10 stages: Monitor → Investigate → Evidence → Precedent → Compare → Scale → Forecast → Plan → Ask AI → Report (see *Demo story* above). Workflow pages end with one **Next ·** button to the following page. Its buttons only navigate; starting the simulator, injecting a disturbance and asking Gemini remain explicit actions on those pages. No experiment is selected automatically (each page keeps its own selection).
 
 **Alert highlighting.** While a live alert is unacknowledged (and the connection is open), the affected parameter is highlighted on the illustrative vessel (DO probe, pH probe, thermometer, motor; Bioreactor page and Command Center, for the displayed run only) and on the matching metric card of the Simulated Bioreactor page. It is derived from the existing live alerts and disappears on acknowledge, reset, a lost connection (stale alerts) or a new run.
 
@@ -507,8 +611,8 @@ Example streamed observation — the `observation` object uses the same model as
 
 ## Prerequisites
 
-- Python 3.11+
-- Node.js 20+
+- Python 3.12+
+- Node.js 20+ (with npm)
 
 ## Run the backend
 
