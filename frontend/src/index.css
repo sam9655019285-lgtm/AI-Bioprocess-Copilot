@@ -1513,3 +1513,26 @@ button.evidence-ref.evidence-sev-significant, .evidence-detail.evidence-sev-sign
 @media (max-width: 480px) { .evidence-ref-name { max-width: 180px; } }
 .evidence-refs > div:last-child { flex-basis: 100%; min-width: 0; }
 .evidence-refs > div:last-child:empty { display: none; }
+
+/* Phase 22 — investigation workflow (presentation only). Demo step numbers follow the navigation tones:
+   Monitor cyan · Investigate/Evidence/Precedent amber · Compare neutral · Scale/Forecast/Plan orange ·
+   Ask AI violet · Report neutral. */
+.cc-demo-steps li[data-stage='Investigate']::before, .cc-demo-steps li[data-stage='Evidence']::before, .cc-demo-steps li[data-stage='Precedent']::before { background: var(--warn); }
+.cc-demo-steps li[data-stage='Scale']::before, .cc-demo-steps li[data-stage='Forecast']::before, .cc-demo-steps li[data-stage='Plan']::before { background: var(--series-b); }
+.cc-demo-steps li[data-stage='Compare']::before, .cc-demo-steps li[data-stage='Report']::before { background: var(--text-2); }
+.cc-demo-steps li[data-stage='Ask AI']::before { background: var(--ai); }
+
+/* Next-step handoff at the foot of a workflow page: quiet, one per page, never stronger than page actions */
+.next-step {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1px solid var(--border);
+}
+.next-step-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.next-step-stage { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; color: var(--accent); }
+.next-step-hint { font-size: 0.82rem; color: var(--muted); }
+button.next-step-button { min-height: 36px; }
+button.next-step-button::after { content: " →"; }
+.card.anomalies .next-step-stage { color: var(--text-2); }
+.card.comparison .next-step-stage, .card.scaleup .next-step-stage, .card.forecasting .next-step-stage { color: var(--series-b); }
+.card.planning .next-step-stage { color: var(--ai); }
+.card.copilot .next-step-stage { color: var(--text-2); }

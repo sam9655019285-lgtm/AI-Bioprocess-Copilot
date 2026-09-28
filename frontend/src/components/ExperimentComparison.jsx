@@ -3,6 +3,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { compareExperiments, getAIStatus, interpretComparison } from '../api.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import SourceBadge from './SourceBadge.jsx'
+import NextStep from './NextStep.jsx'
 
 const METRICS = [
   { id: 'average', label: 'Average' },
@@ -271,7 +272,7 @@ export function Interpretation({ result }) {
 }
 
 /** Deterministic side-by-side comparison of two stored experiments, with optional Gemini interpretation. */
-export default function ExperimentComparison({ active, dataVersion, comparisonRequest }) {
+export default function ExperimentComparison({ active, dataVersion, comparisonRequest, onNavigate }) {
   const [a, setA] = useState(null)
   const [b, setB] = useState(null)
   const [result, setResult] = useState(null)
@@ -452,6 +453,7 @@ export default function ExperimentComparison({ active, dataVersion, comparisonRe
       )}
       {!shown && !loading && aId && bId && !same && <p className="muted placeholder">Press “Compare Experiments”.</p>}
       {(!aId || !bId) && <p className="muted placeholder">Select Experiment A and Experiment B.</p>}
+      <NextStep stage="Scale" label="Explore Scale-Up" page="scaleup" hint="Scale-up scenarios, engineering estimates and stored scale-up series." onNavigate={onNavigate} />
     </section>
   )
 }

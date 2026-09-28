@@ -5,6 +5,7 @@ import MetricCard from './MetricCard.jsx'
 import ProcessStatistics from './ProcessStatistics.jsx'
 import ProcessTrendCharts from './ProcessTrendCharts.jsx'
 import SourceBadge from './SourceBadge.jsx'
+import NextStep from './NextStep.jsx'
 
 const LATEST_VALUES = [
   { key: 'temperature_c', label: 'Temperature', unit: '°C', digits: 2 },
@@ -60,7 +61,7 @@ function DataQuality({ analysis }) {
 }
 
 /** Descriptive monitoring view of one stored experiment: what was recorded, with no evaluation. */
-export default function ProcessMonitoring({ active, dataVersion, analysisRequest }) {
+export default function ProcessMonitoring({ active, dataVersion, analysisRequest, onNavigate }) {
   const [experiment, setExperiment] = useState(null)
   const [analysis, setAnalysis] = useState(null)
   const [error, setError] = useState(null)
@@ -197,6 +198,7 @@ export default function ProcessMonitoring({ active, dataVersion, analysisRequest
           )}
         </>
       )}
+      <NextStep stage="Investigate" label="Investigate Findings" page="anomalies" hint="Rule-based findings and their evidence on the Anomalies page." onNavigate={onNavigate} />
     </section>
   )
 }

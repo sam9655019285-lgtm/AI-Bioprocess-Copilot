@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { interpretPlan, planExperiment } from '../api.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
+import NextStep from './NextStep.jsx'
 
 /*
  * Experiment Planning (Phase 16): "What should I test next?". The backend generates
@@ -124,7 +125,7 @@ function CandidateCard({ c, reference, explanation }) {
   )
 }
 
-export default function ExperimentPlanning({ dataVersion }) {
+export default function ExperimentPlanning({ dataVersion, onNavigate }) {
   const [experiment, setExperiment] = useState(null)
   const [objective, setObjective] = useState('improve_cell_density')
   const [rows, setRows] = useState(EMPTY_ROWS)
@@ -388,6 +389,7 @@ export default function ExperimentPlanning({ dataVersion }) {
           </details>
         </div>
       )}
+      <NextStep stage="Ask AI" label="Ask AI About This Plan" page="copilot" hint="Gemini answers only when you press Send." onNavigate={onNavigate} />
     </section>
   )
 }

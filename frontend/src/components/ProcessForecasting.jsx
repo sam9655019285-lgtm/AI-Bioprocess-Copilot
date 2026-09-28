@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { forecastExperiment } from '../api.js'
 import ExperimentPicker from './ExperimentPicker.jsx'
+import NextStep from './NextStep.jsx'
 
 /*
  * Process Forecasting (Phase 15): an Illustrative Process Forecast computed by the backend
@@ -128,7 +129,7 @@ function ParameterPanel({ p }) {
   )
 }
 
-export default function ProcessForecasting({ dataVersion, onForecastSettings }) {
+export default function ProcessForecasting({ dataVersion, onForecastSettings, onNavigate }) {
   const [experiment, setExperiment] = useState(null)
   const [horizon, setHorizon] = useState('')
   const [cellModel, setCellModel] = useState('exponential')
@@ -297,6 +298,7 @@ export default function ProcessForecasting({ dataVersion, onForecastSettings }) 
           )}
         </form>
       )}
+      <NextStep stage="Plan" label="Plan Next Experiment" page="planning" hint="Candidate conditions within allowed ranges (no outcome prediction)." onNavigate={onNavigate} />
     </section>
   )
 }

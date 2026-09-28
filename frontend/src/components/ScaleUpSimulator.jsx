@@ -5,6 +5,7 @@ import ExperimentPicker from './ExperimentPicker.jsx'
 import MetricCard from './MetricCard.jsx'
 import ScaleUpSeries from './ScaleUpSeries.jsx'
 import SourceBadge from './SourceBadge.jsx'
+import NextStep from './NextStep.jsx'
 
 const QUICK_SCALES = [1, 10, 100, 1000]
 const QUICK_FACTORS = [10, 100, 1000]
@@ -178,7 +179,7 @@ function DerivedCalculations({ result }) {
 }
 
 /** Transparent, illustrative scale-up scenario for a stored experiment (read-only). */
-export default function ScaleUpSimulator({ active, dataVersion, onScaleUpScenario, onOpenComparison }) {
+export default function ScaleUpSimulator({ active, dataVersion, onScaleUpScenario, onOpenComparison, onNavigate }) {
   const [experiment, setExperiment] = useState(null)
   const [source, setSource] = useState(null) // Phase 5 analysis of the source experiment
   const [targetScale, setTargetScale] = useState('')
@@ -449,6 +450,7 @@ export default function ScaleUpSimulator({ active, dataVersion, onScaleUpScenari
       )}
       {loaded && <AdvancedScaleUpModeling experimentId={experimentId} targetScale={targetScale} />}
       <ScaleUpSeries active={active} dataVersion={dataVersion} onOpenComparison={onOpenComparison} />
+      <NextStep stage="Forecast" label="Forecast Process" page="forecasting" hint="Illustrative model forecast from the stored observations." onNavigate={onNavigate} />
     </section>
   )
 }

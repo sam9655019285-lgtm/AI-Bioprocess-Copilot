@@ -4,6 +4,7 @@ import { buildPreservedScaleUp, SCENARIO_SCALES } from '../scaleUpScenario.js'
 import EvidenceRefs, { RejectedRefsNote } from './EvidenceRefs.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import SourceBadge from './SourceBadge.jsx'
+import NextStep from './NextStep.jsx'
 
 const NOTICE =
   'This Copilot is a decision-support prototype. It does not control a physical bioreactor and does not replace scientist or process-engineering judgment.'
@@ -295,6 +296,7 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, foreca
           </p>
         </article>
       )}
+      <NextStep stage="Report" label="Generate Report" page="report" hint="Document the investigation as a PDF from existing results." onNavigate={onNavigate} />
     </section>
   )
 }

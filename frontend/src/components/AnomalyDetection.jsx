@@ -4,6 +4,7 @@ import ExperimentPicker from './ExperimentPicker.jsx'
 import FindingPrecedents from './FindingPrecedents.jsx'
 import MetricCard from './MetricCard.jsx'
 import SourceBadge from './SourceBadge.jsx'
+import NextStep from './NextStep.jsx'
 
 const SEVERITIES = [
   { id: 'significant', label: 'Significant' },
@@ -196,7 +197,7 @@ function MonitoringConfiguration({ config }) {
 }
 
 /** Deterministic, rule-based findings with evidence for a stored experiment (no AI, nothing stored). */
-export default function AnomalyDetection({ active, dataVersion, onOpenComparison }) {
+export default function AnomalyDetection({ active, dataVersion, onOpenComparison, onNavigate }) {
   const [experiment, setExperiment] = useState(null)
   const [report, setReport] = useState(null)
   const [error, setError] = useState(null)
@@ -322,6 +323,7 @@ export default function AnomalyDetection({ active, dataVersion, onOpenComparison
           <MonitoringConfiguration config={shown.configuration} />
         </>
       )}
+      <NextStep stage="Compare" label="Compare Runs" page="comparison" hint="Use Find precedents on a finding first, or compare any two stored runs." onNavigate={onNavigate} />
     </section>
   )
 }
