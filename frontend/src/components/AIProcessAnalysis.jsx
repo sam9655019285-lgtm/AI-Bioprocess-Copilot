@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { analyzeWithAI, getAIStatus } from '../api.js'
 import { buildPreservedScaleUp, SCENARIO_SCALES as SCALES } from '../scaleUpScenario.js'
+import EvidenceRefs, { RejectedRefsNote } from './EvidenceRefs.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 
 const NOTICE =
@@ -24,8 +25,11 @@ function Field({ label, kind, children }) {
   )
 }
 
-function AIResult({ result }) {
+function AIResult({ result, onNavigate }) {
   const a = result.analysis
+  const refs = (p) => (
+    <EvidenceRefs label="Supported by" refs={p.evidence_refs} items={result.evidence_items} onNavigate={onNavigate} />
+  )
   return (
     <div className="ai-result">
       <p className="ai-trust">
@@ -37,6 +41,7 @@ function AIResult({ result }) {
         {result.observation_count} observation(s) and {result.finding_count} deterministic finding(s)
         {result.scale_up_included ? ' and a scale-up scenario' : ''}
       </p>
+      <RejectedRefsNote refs={result.rejected_evidence_refs} />
 
       <Section title="Process Overview">
         <p className="ai-overview">{a.overview}</p>
@@ -49,6 +54,7 @@ function AIResult({ result }) {
               <h4>{p.title}</h4>
               <Field label="Observation">{p.observation}</Field>
               <Field label="Evidence" kind="evidence">{p.evidence}</Field>
+              {refs(p)}
             </article>
           ))}
         </div>
@@ -62,6 +68,7 @@ function AIResult({ result }) {
               <Field label="Interpretation">{p.interpretation}</Field>
               <Field label="Supporting evidence" kind="evidence">{p.supporting_evidence}</Field>
               <Field label="Uncertainty" kind="uncertainty">{p.uncertainty}</Field>
+              {refs(p)}
             </article>
           ))}
         </div>
@@ -75,6 +82,7 @@ function AIResult({ result }) {
                 {p.title} <span className="treat-badge treat-baseline">{p.finding_type}</span>
               </h4>
               <p>{p.explanation}</p>
+              {refs(p)}
             </article>
           ))}
         </div>
@@ -107,7 +115,7 @@ function AIResult({ result }) {
 }
 
 /** Gemini interpretation of the deterministic analysis (Phase 5), findings (Phase 7) and optional scale-up (Phase 6). */
-export default function AIProcessAnalysis({ active, dataVersion, onAIAnalysis }) {
+export default function AIProcessAnalysis({ active, dataVersion, onAIAnalysis, onNavigate }) {
   const [configured, setConfigured] = useState(null) // null = unknown
   const [statusError, setStatusError] = useState(null)
   const [experiment, setExperiment] = useState(null)
@@ -220,7 +228,7 @@ export default function AIProcessAnalysis({ active, dataVersion, onAIAnalysis })
         </div>
       )}
       {error && <div className="alert alert-error">{error}</div>}
-      {result && result.experiment_id === experimentId && <AIResult result={result} />}
+      {result && result.experiment_id === experimentId && <AIResult result={result} onNavigate={onNavigate} />}
     </section>
   )
 }

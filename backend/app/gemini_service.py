@@ -50,12 +50,14 @@ class GeminiResponseError(Exception):
 # --- Response schema (sent to Gemini as the required JSON structure, then validated) ---
 
 _TEXT = 4000
+EVIDENCE_REFS_HELP = "Application-generated evidence IDs (F-###, P-###) from the context that support this item."
 
 
 class ObservedPattern(BaseModel):
     title: str = Field(max_length=300)
     observation: str = Field(max_length=_TEXT)
     evidence: str = Field(max_length=_TEXT)
+    evidence_refs: list[str] = Field(default_factory=list, max_length=12, description=EVIDENCE_REFS_HELP)
 
 
 class PossibleInterpretation(BaseModel):
@@ -63,12 +65,14 @@ class PossibleInterpretation(BaseModel):
     interpretation: str = Field(max_length=_TEXT)
     supporting_evidence: str = Field(max_length=_TEXT)
     uncertainty: str = Field(max_length=_TEXT)
+    evidence_refs: list[str] = Field(default_factory=list, max_length=12, description=EVIDENCE_REFS_HELP)
 
 
 class AttentionPoint(BaseModel):
     title: str = Field(max_length=300)
     finding_type: str = Field(max_length=100)
     explanation: str = Field(max_length=_TEXT)
+    evidence_refs: list[str] = Field(default_factory=list, max_length=12, description=EVIDENCE_REFS_HELP)
 
 
 class ScaleUpConsideration(BaseModel):
@@ -121,9 +125,10 @@ def gemini_schema(response_model: type[BaseModel]) -> dict:
 
     Gemini rejects `maxItems` in response_json_schema with 400 INVALID_ARGUMENT, so it is
     removed here only; the list-length limits are still enforced when the response is
-    validated against the Pydantic model.
+    validated against the Pydantic model. `default` (optional Phase 21 evidence_refs) is
+    removed too, keeping the schema to the plain keyword subset.
     """
-    return _drop_keyword(response_model.model_json_schema(), "maxItems")
+    return _drop_keyword(_drop_keyword(response_model.model_json_schema(), "maxItems"), "default")
 
 
 def response_schema() -> dict:

@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlmodel import Session
 
 from . import gemini_service
+from .evidence import PROMPT_RULES, EvidenceItem, annotate_context, build_evidence, filter_refs, referenced
 from .ai_analysis import build_ai_input
 from .analysis import analyze_experiment
 from .anomaly import analyze_anomalies
@@ -63,8 +64,11 @@ Rules:
 Output JSON matching the schema:
 - answer: a direct answer to the question.
 - evidence: specific supporting facts from the context (values, times, finding messages).
+- evidence_refs: the evidence_id values from the context that support the answer (may be empty).
 - uncertainties: what is uncertain or missing for this question.
-- suggested_questions: short follow-up questions the scientist could ask next."""
+- suggested_questions: short follow-up questions the scientist could ask next.
+
+""" + PROMPT_RULES
 
 
 class CopilotAnswer(BaseModel):
@@ -74,6 +78,10 @@ class CopilotAnswer(BaseModel):
     evidence: list[str] = Field(max_length=12)
     uncertainties: list[str] = Field(max_length=10)
     suggested_questions: list[str] = Field(max_length=6)
+    evidence_refs: list[str] = Field(
+        default_factory=list, max_length=20,
+        description="Application-generated evidence IDs (F-###, P-###) from the context that support the answer.",
+    )
 
 
 class AlertNotFound(LookupError):
@@ -123,9 +131,15 @@ class CopilotResponse(BaseModel):
     uncertainties: list[str]
     suggested_questions: list[str]
     context: CopilotContextInfo
+    # Phase 21: cited application evidence (unknown IDs from Gemini are removed and listed separately).
+    evidence_refs: list[str] = []
+    evidence_items: list[EvidenceItem] = []
+    rejected_evidence_refs: list[str] = []
 
 
-def build_copilot_context(session: Session, row: ExperimentRow, request: CopilotRequest) -> tuple[dict, CopilotContextInfo]:
+def build_copilot_context(
+    session: Session, row: ExperimentRow, request: CopilotRequest
+) -> tuple[dict, CopilotContextInfo, list[EvidenceItem]]:
     """Bounded, curated context built from the existing deterministic layers."""
     analysis = analyze_experiment(session, row)
     anomalies = analyze_anomalies(session, row)
@@ -139,6 +153,9 @@ def build_copilot_context(session: Session, row: ExperimentRow, request: Copilot
         context["anomaly_detection"]["note"] = (
             f"Only the {MAX_FINDINGS_IN_CONTEXT} most severe findings are included; counts cover all findings."
         )
+    # Evidence IDs only for what is actually sent (the most severe findings kept above).
+    evidence = build_evidence(analysis, anomalies.findings[:MAX_FINDINGS_IN_CONTEXT])
+    annotate_context(context, evidence)
     if request.ai_analysis is not None:
         context["previous_ai_process_analysis"] = {
             "note": "Earlier AI-generated interpretation (Phase 8). Not deterministic fact.",
@@ -168,7 +185,7 @@ def build_copilot_context(session: Session, row: ExperimentRow, request: Copilot
         scale_up_included=scale_up is not None,
         ai_analysis_included=request.ai_analysis is not None,
     )
-    return context, info
+    return context, info, evidence
 
 
 def build_prompt(context: dict, message: str) -> str:
@@ -181,13 +198,18 @@ def build_prompt(context: dict, message: str) -> str:
 
 
 def ask_copilot(session: Session, row: ExperimentRow, request: CopilotRequest, generate: Generator | None = None) -> CopilotResponse:
-    context, info = build_copilot_context(session, row, request)
+    context, info, evidence = build_copilot_context(session, row, request)
     answer = gemini_service.generate_structured(SYSTEM_INSTRUCTION, build_prompt(context, request.message), CopilotAnswer, generate)
+    rejected: list[str] = []
+    refs = filter_refs(answer.evidence_refs, {e.id for e in evidence}, rejected)
     return CopilotResponse(
         experiment_id=row.experiment_id,
         model=gemini_service.model_name(),
         generated_at=datetime.now(timezone.utc),
         question=request.message,
-        **answer.model_dump(),
+        **answer.model_dump(exclude={"evidence_refs"}),
         context=info,
+        evidence_refs=refs,
+        evidence_items=referenced(evidence, set(refs)),
+        rejected_evidence_refs=rejected,
     )

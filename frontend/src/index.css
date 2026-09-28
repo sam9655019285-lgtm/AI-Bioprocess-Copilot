@@ -1470,3 +1470,46 @@ button.danger:not(.small) { color: #2a0606; }
 /* Copilot question chips sit on the AI surface: violet, not the observed-data cyan */
 .copilot .chip-question { color: var(--ai); border-color: color-mix(in srgb, var(--ai) 45%, var(--border)); background: transparent; }
 .copilot .chip-question:hover:not(:disabled) { background: var(--ai-bg); border-color: var(--ai); }
+
+/* Evidence-linked AI (Phase 21): references to APPLICATION evidence inside AI output.
+   Evidence is not AI content: chips are neutral with a tone edge by kind — anomaly = its severity
+   (info blue · attention amber · significant red), process statistic = observed cyan, coverage = neutral. */
+.evidence-refs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: var(--space-2); }
+.evidence-refs-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--muted); }
+.evidence-ref-list { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+button.evidence-ref {
+  --ev-tone: var(--text-2);
+  display: inline-flex; align-items: baseline; gap: 6px; max-width: 100%; min-height: 28px;
+  padding: 3px 8px; background: var(--bg); color: var(--text-2);
+  border: 1px solid var(--border-strong); border-left: 2px solid var(--ev-tone); border-radius: var(--radius-sm);
+  font: inherit; font-size: 0.76rem; font-weight: 400; text-align: left; cursor: pointer;
+}
+button.evidence-ref:hover:not(:disabled) { background: var(--surface-2); border-color: var(--ev-tone); color: var(--text); }
+button.evidence-ref[aria-expanded='true'] { background: var(--surface-2); border-color: var(--ev-tone); color: var(--text); }
+.evidence-ref-id { font-family: var(--font-mono); font-weight: 600; color: var(--text); white-space: nowrap; }
+.evidence-ref-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.evidence-ref.evidence-process_statistic, .evidence-detail.evidence-process_statistic { --ev-tone: var(--accent); }
+button.evidence-ref.evidence-data_coverage, .evidence-detail.evidence-data_coverage { --ev-tone: var(--text-2); }
+button.evidence-ref.evidence-sev-info, .evidence-detail.evidence-sev-info { --ev-tone: var(--info); }
+button.evidence-ref.evidence-sev-attention, .evidence-detail.evidence-sev-attention { --ev-tone: var(--warn); }
+button.evidence-ref.evidence-sev-significant, .evidence-detail.evidence-sev-significant { --ev-tone: var(--bad); }
+
+.evidence-detail {
+  --ev-tone: var(--text-2);
+  flex-basis: 100%; margin-top: var(--space-2); padding: var(--space-3);
+  background: var(--bg); color: var(--text); border: 1px solid var(--border); border-left: 2px solid var(--ev-tone); border-radius: var(--radius);
+  font-size: 0.84rem;
+}
+.evidence-detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 4px; }
+.evidence-detail-id { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.04em; color: var(--text); }
+.evidence-detail-head .sev-badge, .evidence-detail-head .cat-badge { margin: 0; }
+.evidence-detail-text { margin: 4px 0 var(--space-2); color: var(--text); }
+.evidence-detail-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px var(--space-4); margin: 0 0 var(--space-2); }
+.evidence-detail-facts dt { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em; color: var(--muted); }
+.evidence-detail-facts dd { margin: 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text); }
+.evidence-detail-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.76rem; }
+.evidence-detail-foot button.small { min-height: 32px; }
+.evidence-rejected { margin: 4px 0 0; color: var(--warn); }
+@media (max-width: 480px) { .evidence-ref-name { max-width: 180px; } }
+.evidence-refs > div:last-child { flex-basis: 100%; min-width: 0; }
+.evidence-refs > div:last-child:empty { display: none; }

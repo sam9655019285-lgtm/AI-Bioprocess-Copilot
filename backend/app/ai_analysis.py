@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from sqlmodel import Session
 
 from . import gemini_service
+from .evidence import PROMPT_RULES, EvidenceItem, annotate_context, build_evidence, filter_refs, referenced
 from .analysis import ExperimentAnalysis, analyze_experiment
 from .anomaly import AnomalyReport, analyze_anomalies
 from .db_models import ExperimentRow
@@ -50,7 +51,9 @@ Important rules:
 Output: JSON matching the provided schema. Arrays may be empty. attention_points should refer to the supplied
 deterministic findings (use their type in finding_type). Only fill scale_up_considerations when a scale_up
 section is present in the input; it is an illustrative scenario, not a validated prediction.
-Quote numbers exactly as supplied, with their units."""
+Quote numbers exactly as supplied, with their units.
+
+""" + PROMPT_RULES
 
 
 class AIAnalysisRequest(BaseModel):
@@ -67,6 +70,9 @@ class AIAnalysisResponse(BaseModel):
     finding_count: int
     scale_up_included: bool
     analysis: AIAnalysis
+    # Phase 21: the application-generated evidence the interpretation cites (only known IDs are kept).
+    evidence_items: list[EvidenceItem] = []
+    rejected_evidence_refs: list[str] = []
 
 
 # --- Controlled input ----------------------------------------------------------------
@@ -141,10 +147,17 @@ def run_ai_analysis(
     anomalies = analyze_anomalies(session, row)
     scale_up = simulate_scale_up(session, row, request.scale_up) if request.scale_up else None
     payload = build_ai_input(analysis, anomalies, scale_up)
+    evidence = build_evidence(analysis, anomalies.findings)
+    annotate_context(payload, evidence)
 
     result = gemini_service.generate_analysis(SYSTEM_INSTRUCTION, build_prompt(payload), generate)
     if scale_up is None:
         result.scale_up_considerations = []  # only meaningful when a scenario was supplied
+    valid, rejected = {e.id for e in evidence}, []
+    cited: set[str] = set()
+    for item in (*result.observed_patterns, *result.possible_interpretations, *result.attention_points):
+        item.evidence_refs = filter_refs(item.evidence_refs, valid, rejected)
+        cited.update(item.evidence_refs)
     return AIAnalysisResponse(
         experiment_id=row.experiment_id,
         model=gemini_service.model_name(),
@@ -153,4 +166,6 @@ def run_ai_analysis(
         finding_count=anomalies.finding_count,
         scale_up_included=scale_up is not None,
         analysis=result,
+        evidence_items=referenced(evidence, cited),
+        rejected_evidence_refs=rejected,
     )

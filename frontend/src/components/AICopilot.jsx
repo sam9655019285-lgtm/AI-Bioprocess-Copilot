@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { askCopilot, getAIStatus, getExperimentAnalysis, getExperimentAnomalies } from '../api.js'
 import { buildPreservedScaleUp, SCENARIO_SCALES } from '../scaleUpScenario.js'
+import EvidenceRefs, { RejectedRefsNote } from './EvidenceRefs.jsx'
 import ExperimentPicker from './ExperimentPicker.jsx'
 import SourceBadge from './SourceBadge.jsx'
 
@@ -77,7 +78,7 @@ function ListSection({ title, items, empty, className = '', note }) {
 }
 
 /** Contextual decision-support assistant for one stored experiment (deterministic context, Gemini interpretation). */
-export default function AICopilot({ active, dataVersion, aiAnalyses = {}, forecastSettings = {}, onCopilotReply }) {
+export default function AICopilot({ active, dataVersion, aiAnalyses = {}, forecastSettings = {}, onCopilotReply, onNavigate }) {
   const [configured, setConfigured] = useState(null)
   const [experiment, setExperiment] = useState(null)
   const [context, setContext] = useState(null) // { analysis, anomalies } for the summary
@@ -266,6 +267,8 @@ export default function AICopilot({ active, dataVersion, aiAnalyses = {}, foreca
               <span className="cat-badge cat-ai">AI INTERPRETATION</span>
             </div>
             <p className="copilot-answer">{reply.answer}</p>
+            <EvidenceRefs label="Evidence used" refs={reply.evidence_refs} items={reply.evidence_items} onNavigate={onNavigate} />
+            <RejectedRefsNote refs={reply.rejected_evidence_refs} />
           </section>
           <ListSection title="Evidence from the experiment data" items={reply.evidence} empty="No specific evidence cited." className="copilot-section-evidence" note="cited by the AI from the supplied experiment context" />
           <ListSection title="Uncertainties" items={reply.uncertainties} empty="None stated." className="copilot-section-uncertainty" />
